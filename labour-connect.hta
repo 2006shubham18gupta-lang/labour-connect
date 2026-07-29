@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<HTA:APPLICATION 
+    APPLICATIONNAME="Labour Connect"
+    VERSION="1.0"
+    SCROLL="yes"
+    SINGLEINSTANCE="yes"
+    WINDOWSTATE="normal"
+>
+<meta charset="UTF-8">
+<title>Labour Connect</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { 
+    font-family: 'Segoe UI', sans-serif; 
+    background: #0b1020; 
+    color: #e5eefc;
+    overflow: hidden;
+}
+</style>
+<script>
+function onload() {
+    window.moveTo(100, 100);
+    window.resizeTo(1200, 800);
+    window.onbeforeunload = function() {
+        if(confirm('Close Labour Connect?')) {
+            return true;
+        }
+        return false;
+    };
+}
+</script>
+</head>
+<body onload="onload()">
+    <iframe src="index.html" style="width:100%;height:100%;border:none;"></iframe>
+</body>
+</html>

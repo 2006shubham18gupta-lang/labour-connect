@@ -1,0 +1,46 @@
+{
+  "name": "labour-connect",
+  "version": "1.0.0",
+  "description": "Labour Connect - Workforce Hiring Platform",
+  "main": "electron-main.js",
+  "scripts": {
+    "start": "electron . --no-sandbox",
+    "serve": "npx -y serve . -p 3000",
+    "build": "echo Static site ready",
+    "build:electron": "electron-builder --win --x64",
+    "build:dir": "electron-builder --win --x64 --dir"
+  },
+  "build": {
+    "appId": "com.labourconnect.app",
+    "productName": "Shramik Setu",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "*.html",
+      "*.css",
+      "*.js",
+      "*.ico"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "favicon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  },
+  "author": "Shramik Setu",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^41.3.0"
+  }
+}

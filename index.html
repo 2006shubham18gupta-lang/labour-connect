@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shramik Setu — Skilled Worker & Workforce Platform</title>
+    <link rel="manifest" href="./manifest.json" />
+    <meta name="theme-color" content="#f59e0b" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Shramik Setu" />
+    <link rel="icon" type="image/x-icon" href="./favicon.ico" />
+    <!-- Modern Typography Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <!-- Topbar Header -->
+      <header class="topbar">
+        <div class="brand" data-action="show-home">
+          <div class="brand__logo">
+            <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+              <rect width="40" height="40" rx="10" fill="url(#brandGrad)"/>
+              <!-- Hardhat / Helmet & Tools Icon -->
+              <path d="M12 24C12 18.4772 15.5817 14 20 14C24.4183 14 28 18.4772 28 24H12Z" stroke="white" stroke-width="2.5" stroke-linejoin="round"/>
+              <rect x="9" y="24" width="22" height="3" rx="1.5" fill="white"/>
+              <path d="M20 10V14" stroke="#fbbf24" stroke-width="2.5" stroke-linecap="round"/>
+              <circle cx="20" cy="9" r="1.5" fill="#fbbf24"/>
+              <defs>
+                <linearGradient id="brandGrad" x1="0" y1="0" x2="40" y2="40">
+                  <stop stop-color="#f59e0b"/>
+                  <stop offset="0.6" stop-color="#f97316"/>
+                  <stop offset="1" stop-color="#d97706"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <div>
+            <div class="brand__header-wrap">
+              <h1>Shramik Setu</h1>
+              <span class="brand__tag-badge">श्रमिक सेतु</span>
+            </div>
+            <p class="brand__eyebrow">Direct Skilled Workforce Platform</p>
+          </div>
+        </div>
+
+        <nav class="topbar__nav">
+          <button class="nav-link" data-action="show-home">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8l6-6 6 6M4 7v6h3v-4h2v4h3V7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Home
+          </button>
+
+          <button class="nav-link" data-action="show-browse-workers">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Find Workers
+          </button>
+
+          <div class="nav-divider"></div>
+
+          <button class="nav-link nav-link--labour" data-action="show-labour-login">
+            <span class="nav-link__icon">👷</span>
+            Worker Login
+          </button>
+
+          <button class="nav-link nav-link--customer" data-action="show-customer-login">
+            <span class="nav-link__icon">🏠</span>
+            Customer Login
+          </button>
+
+          <button class="nav-link nav-link--accent" data-action="show-labour-register">
+            <span class="nav-link__icon">⚡</span>
+            Register as Worker
+          </button>
+        </nav>
+      </header>
+
+      <main id="app">
+        <!-- Hero Section -->
+        <section class="hero hero--v2" id="home-view">
+          <div class="hero__ambient-glow"></div>
+
+          <div class="hero__content-v2">
+            <div class="hero__badge-v2">
+              <span class="hero__badge-dot"></span>
+              <span class="hero__badge-text">🇮🇳 100% Direct Worker Connection • No Agent Commission</span>
+            </div>
+            
+            <h1 class="hero__title-v2">
+              Find Skilled <span class="hero__title-highlight">Workers</span> Nearby or Get <span class="hero__title-gold">Daily Work</span> Direct
+            </h1>
+            
+            <p class="hero__desc-v2">
+              Connect directly with verified Masons, Electricians, Plumbers, Painters, Carpenters, Welders & Daily Wage Workers. Zero middleman fees, instant WhatsApp/Call connection, and transparent daily rates.
+            </p>
+
+            <div class="hero__actions-v2">
+              <button class="button-v2 button-v2--primary" data-action="show-labour-register">
+                <span>👷 Register as Skilled Worker</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+
+              <button class="button-v2 button-v2--secondary" data-action="show-browse-workers">
+                <span>🔍 Hire Workers Nearby</span>
+              </button>
+            </div>
+
+            <!-- Quick Trade Chips -->
+            <div class="hero__trade-chips">
+              <span class="hero__trade-label">Popular Trades:</span>
+              <button class="trade-chip" data-skill="Electrician">⚡ Electrician</button>
+              <button class="trade-chip" data-skill="Plumber">🔧 Plumber</button>
+              <button class="trade-chip" data-skill="Mason">🧱 Mason</button>
+              <button class="trade-chip" data-skill="Painter">🎨 Painter</button>
+              <button class="trade-chip" data-skill="Carpenter">🪚 Carpenter</button>
+              <button class="trade-chip" data-skill="Welder">🔥 Welder</button>
+            </div>
+          </div>
+
+          <div class="hero__visual-v2">
+            <div class="hero__orb hero__orb--1"></div>
+            <div class="hero__orb hero__orb--2"></div>
+
+            <div class="hero__graphic-frame">
+              <div class="hero__graphic-header">
+                <span class="hero__graphic-dot"></span>
+                <span class="hero__graphic-dot"></span>
+                <span class="hero__graphic-dot"></span>
+                <span class="hero__graphic-title">Shramik Setu • Verified Workforce</span>
+              </div>
+              
+              <img src="./assets/hero-graphic.png" alt="Shramik Setu Skilled Workers Illustration" class="hero__graphic-img" />
+
+              <!-- Floating UI Badges -->
+              <div class="hero__floating-badge hero__floating-badge--left">
+                <div class="badge-icon">✅</div>
+                <div class="badge-text">
+                  <strong>Aadhaar Verified</strong>
+                  <span>Trusted & Local</span>
+                </div>
+              </div>
+
+              <div class="hero__floating-badge hero__floating-badge--right">
+                <div class="badge-icon">💰</div>
+                <div class="badge-text">
+                  <strong>₹500 - ₹2000/day</strong>
+                  <span>Transparent Wages</span>
+                </div>
+              </div>
+
+              <div class="hero__floating-badge hero__floating-badge--bottom">
+                <div class="badge-icon">⚡</div>
+                <div class="badge-text">
+                  <strong>Direct Call & WhatsApp</strong>
+                  <span>Instant Booking</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Labour Login Page -->
+        <section class="login-page hidden" id="labour-login-view">
+          <div class="login-page__card">
+            <div class="login-page__header">
+              <div class="login-page__icon-wrap login-page__icon-wrap--labour">
+                <span class="login-page__icon">👷</span>
+              </div>
+              <h2>Worker Login (कामगार लॉगिन)</h2>
+              <p>Sign in to update your daily availability, skills, and phone number</p>
+            </div>
+            <form class="login-page__form" id="labour-login-form">
+              <div class="login-page__field">
+                <label for="labour-login-username">Username</label>
+                <div class="login-page__input-wrap">
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 9a3.5 3.5 0 100-7 3.5 3.5 0 000 7zM2 16c0-2.5 3.1-4.5 7-4.5s7 2 7 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                  <input type="text" id="labour-login-username" name="username" placeholder="e.g. raju_worker" autocomplete="username" required />
+                </div>
+              </div>
+              <div class="login-page__field">
+                <label for="labour-login-password">Password</label>
+                <div class="login-page__input-wrap">
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="3" y="8" width="12" height="8" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M6 8V5a3 3 0 016 0v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="currentColor"/></svg>
+                  <input type="password" id="labour-login-password" name="password" placeholder="Enter your password" autocomplete="current-password" required />
+                </div>
+              </div>
+              <button type="submit" class="login-page__btn login-page__btn--worker">Sign In as Worker →</button>
+            </form>
+            <div class="login-page__footer">
+              Don't have a worker profile yet? <a href="#" data-action="show-labour-register">Register as Worker (मुफ्त रजिस्ट्रेशन) →</a>
+            </div>
+          </div>
+          <div class="login-page__decoration">
+            <div class="login-page__orb login-page__orb--1"></div>
+            <div class="login-page__orb login-page__orb--2"></div>
+            <div class="login-page__orb login-page__orb--3"></div>
+          </div>
+        </section>
+
+        <!-- Customer Login Page -->
+        <section class="login-page hidden" id="customer-login-view">
+          <div class="login-page__card">
+            <div class="login-page__header">
+              <div class="login-page__icon-wrap login-page__icon-wrap--customer">
+                <span class="login-page__icon">🏠</span>
+              </div>
+              <h2>Customer Login (ग्राहक लॉगिन)</h2>
+              <p>Sign in to browse, compare rates, and contact skilled workers directly</p>
+            </div>
+            <form class="login-page__form" id="customer-login-form">
+              <div class="login-page__field">
+                <label for="customer-login-username">Username</label>
+                <div class="login-page__input-wrap">
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 9a3.5 3.5 0 100-7 3.5 3.5 0 000 7zM2 16c0-2.5 3.1-4.5 7-4.5s7 2 7 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                  <input type="text" id="customer-login-username" name="username" placeholder="e.g. customer" autocomplete="username" required />
+                </div>
+              </div>
+              <div class="login-page__field">
+                <label for="customer-login-password">Password</label>
+                <div class="login-page__input-wrap">
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="3" y="8" width="12" height="8" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M6 8V5a3 3 0 016 0v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="currentColor"/></svg>
+                  <input type="password" id="customer-login-password" name="password" placeholder="Enter your password" autocomplete="current-password" required />
+                </div>
+              </div>
+              <button type="submit" class="login-page__btn login-page__btn--customer">Sign In as Customer →</button>
+            </form>
+            <div class="login-page__footer">
+              Don't have a customer account? <a href="#" data-action="show-customer-register">Register as Customer →</a>
+            </div>
+          </div>
+          <div class="login-page__decoration">
+            <div class="login-page__orb login-page__orb--1"></div>
+            <div class="login-page__orb login-page__orb--2"></div>
+            <div class="login-page__orb login-page__orb--3"></div>
+          </div>
+        </section>
+
+        <!-- Labour Register Page -->
+        <section class="login-page hidden" id="labour-register-view">
+          <div class="login-page__card login-page__card--wide">
+            <div class="login-page__header">
+              <div class="login-page__icon-wrap login-page__icon-wrap--labour">
+                <span class="login-page__icon">👷</span>
+              </div>
+              <h2>Register as Skilled Worker (कामगार पंजीकरण)</h2>
+              <p>Create your free worker card, set your daily rate (दहाड़ी), and get direct calls from customers!</p>
+            </div>
+            <form class="login-page__form" id="labour-register-form">
+              <div class="register-page__grid">
+                <div class="login-page__field">
+                  <label for="reg-labour-name">Full Name (पूरा नाम)</label>
+                  <div class="login-page__input-wrap">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 9a3.5 3.5 0 100-7 3.5 3.5 0 000 7zM2 16c0-2.5 3.1-4.5 7-4.5s7 2 7 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                    <input type="text" id="reg-labour-name" name="name" placeholder="Raju Kumar" autocomplete="name" required />
+                  </div>
+                </div>
+                <div class="login-page__field">
+                  <label for="reg-labour-username">Username (यूजरनेम)</label>
+                  <div class="login-page__input-wrap">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 15V3h12v12H3zM7 7h4M7 10h2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                    <input type="text" id="reg-labour-username" name="username" placeholder="raju_worker" autocomplete="username" required />
+                  </div>
+                </div>
+              </div>
+
+              <div class="register-page__grid">
+                <div class="login-page__field">
+                  <label for="reg-labour-password">Password (पासवर्ड)</label>
+                  <div class="login-page__input-wrap">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="3" y="8" width="12" height="8" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M6 8V5a3 3 0 016 0v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="currentColor"/></svg>
+                    <input type="password" id="reg-labour-password" name="password" placeholder="Create password" autocomplete="new-password" required />
+                  </div>
+                </div>
+                <div class="login-page__field">
+                  <label for="reg-labour-skill">Primary Skill (आपका कार्य / हुनर)</label>
+                  <select id="reg-labour-skill" name="skill" class="login-page__select" required>
+                    <option value="">Select primary trade / skill</option>
+                    <option value="Electrician">⚡ Electrician (इलेक्ट्रीशियन)</option>
+                    <option value="Plumber">🔧 Plumber (प्लंबर)</option>
+                    <option value="Carpenter">🪚 Carpenter (बढ़ई / कारपेंटर)</option>
+                    <option value="Mason">🧱 Mason (राजमिस्त्री)</option>
+                    <option value="Painter">🎨 Painter (पेंटर / पुताई वाला)</option>
+                    <option value="Welder">🔥 Welder (वेल्डर)</option>
+                    <option value="AC Repair">❄️ AC Repair & Service</option>
+                    <option value="Mechanic">🔩 Vehicle Mechanic</option>
+                    <option value="Driver">🚗 Driver (ड्राइवर)</option>
+                    <option value="Gardener">🌿 Gardener (माली)</option>
+                    <option value="Cleaner">🧹 Home & Site Cleaner</option>
+                    <option value="Security Guard">🛡️ Security Guard</option>
+                    <option value="Construction Worker">🏗️ Construction & Laborer</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="register-page__grid">
+                <div class="login-page__field">
+                  <label for="reg-labour-email">Email Address</label>
+                  <div class="login-page__input-wrap">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="4" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M2 6l7 4 7-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                    <input type="email" id="reg-labour-email" name="email" placeholder="raju@email.com" autocomplete="email" required />
+                  </div>
+                </div>
+                <div class="login-page__field">
+                  <label for="reg-labour-cost">Daily Wage Rate (दहाड़ी ₹/दिन)</label>
+                  <div class="login-page__input-wrap">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 2v14M5 5h7a2 2 0 010 4H6M6 9h6a2 2 0 010 4H5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                    <input type="number" id="reg-labour-cost" name="cost" placeholder="900" min="100" step="50" required />
+                  </div>
+                </div>
+              </div>
+
+              <div class="register-page__grid">
+                <div class="login-page__field">
+                  <label for="reg-labour-phone">Phone Number (मोबाइल नंबर)</label>
+                  <div class="login-page__input-wrap">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M5 2h3l1.5 4-2 1.5a10 10 0 004 4L13 10l4 1.5v3a2 2 0 01-2 2C8 16 2 10 2 4a2 2 0 012-2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                    <input type="tel" id="reg-labour-phone" name="phone" placeholder="+91 9876543210" autocomplete="tel" required />
+                  </div>
+                </div>
+                <div class="login-page__field">
+                  <label for="reg-labour-location">City / Area (शहर / क्षेत्र)</label>
+                  <div class="login-page__input-wrap">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 16s-6-5.3-6-9a6 6 0 0112 0c0 3.7-6 9-6 9z" stroke="currentColor" stroke-width="1.5"/><circle cx="9" cy="7" r="2" stroke="currentColor" stroke-width="1.5"/></svg>
+                    <input type="text" id="reg-labour-location" name="location" placeholder="e.g. Pune, Wakad" autocomplete="address-level2" required />
+                  </div>
+                </div>
+              </div>
+
+              <div class="login-page__field">
+                <label for="reg-labour-photo">Profile Photo / Work Photo (फोटो शेयर करें)</label>
+                <input type="file" id="reg-labour-photo" name="photo" accept="image/*" class="register-file-input" />
+              </div>
+
+              <div class="login-page__field">
+                <label for="reg-labour-about">Work Experience & Details (अनुभव की जानकारी)</label>
+                <textarea id="reg-labour-about" name="about" rows="3" placeholder="Describe your experience, tools you bring, past site projects..." class="login-page__textarea"></textarea>
+              </div>
+
+              <button type="submit" class="login-page__btn login-page__btn--worker">Create Free Worker Account →</button>
+            </form>
+            <div class="login-page__footer">
+              Already registered? <a href="#" data-action="show-labour-login">Sign In to Worker Account →</a>
+            </div>
+          </div>
+          <div class="login-page__decoration">
+            <div class="login-page__orb login-page__orb--1"></div>
+            <div class="login-page__orb login-page__orb--2"></div>
+            <div class="login-page__orb login-page__orb--3"></div>
+          </div>
+        </section>
+
+        <!-- Customer Register Page -->
+        <section class="login-page hidden" id="customer-register-view">
+          <div class="login-page__card login-page__card--wide">
+            <div class="login-page__header">
+              <div class="login-page__icon-wrap login-page__icon-wrap--customer">
+                <span class="login-page__icon">🏠</span>
+              </div>
+              <h2>Register as Customer (ग्राहक पंजीकरण)</h2>
+              <p>Create your account to find, review, and directly contact skilled workers near you</p>
+            </div>
+            <form class="login-page__form" id="customer-register-form">
+              <div class="register-page__grid">
+                <div class="login-page__field">
+                  <label for="reg-customer-name">Full Name</label>
+                  <div class="login-page__input-wrap">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 9a3.5 3.5 0 100-7 3.5 3.5 0 000 7zM2 16c0-2.5 3.1-4.5 7-4.5s7 2 7 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                    <input type="text" id="reg-customer-name" name="name" placeholder="Your full name" autocomplete="name" required />
+                  </div>
+                </div>
+                <div class="login-page__field">
+                  <label for="reg-customer-username">Username</label>
+                  <div class="login-page__input-wrap">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 15V3h12v12H3zM7 7h4M7 10h2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                    <input type="text" id="reg-customer-username" name="username" placeholder="Choose a username" autocomplete="username" required />
+                  </div>
+                </div>
+              </div>
+
+              <div class="register-page__grid">
+                <div class="login-page__field">
+                  <label for="reg-customer-email">Email Address</label>
+                  <div class="login-page__input-wrap">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="4" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M2 6l7 4 7-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                    <input type="email" id="reg-customer-email" name="email" placeholder="your@email.com" autocomplete="email" required />
+                  </div>
+                </div>
+                <div class="login-page__field">
+                  <label for="reg-customer-phone">Phone Number</label>
+                  <div class="login-page__input-wrap">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M5 2h3l1.5 4-2 1.5a10 10 0 004 4L13 10l4 1.5v3a2 2 0 01-2 2C8 16 2 10 2 4a2 2 0 012-2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                    <input type="tel" id="reg-customer-phone" name="phone" placeholder="+91 9876543210" autocomplete="tel" required />
+                  </div>
+                </div>
+              </div>
+
+              <div class="register-page__grid">
+                <div class="login-page__field">
+                  <label for="reg-customer-address">City / Location</label>
+                  <div class="login-page__input-wrap">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 16s-6-5.3-6-9a6 6 0 0112 0c0 3.7-6 9-6 9z" stroke="currentColor" stroke-width="1.5"/><circle cx="9" cy="7" r="2" stroke="currentColor" stroke-width="1.5"/></svg>
+                    <input type="text" id="reg-customer-address" name="address" placeholder="e.g. Mumbai, Andheri" autocomplete="street-address" required />
+                  </div>
+                </div>
+                <div class="login-page__field">
+                  <label for="reg-customer-password">Password</label>
+                  <div class="login-page__input-wrap">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="3" y="8" width="12" height="8" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M6 8V5a3 3 0 016 0v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="currentColor"/></svg>
+                    <input type="password" id="reg-customer-password" name="password" placeholder="Create password" autocomplete="new-password" required />
+                  </div>
+                </div>
+              </div>
+              <button type="submit" class="login-page__btn login-page__btn--customer">Create Customer Account →</button>
+            </form>
+            <div class="login-page__footer">
+              Already have an account? <a href="#" data-action="show-customer-login">Sign In →</a>
+            </div>
+          </div>
+          <div class="login-page__decoration">
+            <div class="login-page__orb login-page__orb--1"></div>
+            <div class="login-page__orb login-page__orb--2"></div>
+            <div class="login-page__orb login-page__orb--3"></div>
+          </div>
+        </section>
+
+        <!-- Landing Page Rich Sections (Visible only on home) -->
+        <div id="landing-sections">
+
+          <!-- Popular Trade Categories Section -->
+          <section class="section-block" id="categories-section">
+            <div class="section-block__label">
+              <span class="section-block__badge section-block__badge--gold">Popular Trades • लोकप्रिय सेवाएँ</span>
+              <h2 class="section-block__title">Browse Workers by Trade &amp; Skill</h2>
+              <p class="section-block__subtitle">Find specialized skilled workers in your city with fixed, transparent daily wages</p>
+            </div>
+
+            <div class="trade-grid" id="trade-categories-grid">
+              <div class="trade-card" data-skill="Electrician">
+                <div class="trade-card__icon trade-card__icon--electrician">⚡</div>
+                <h3>Electrician</h3>
+                <span class="trade-card__sub">इलेक्ट्रीशियन</span>
+                <p>Wiring, MCB fitting, light fixtures &amp; appliance repair</p>
+                <div class="trade-card__footer">
+                  <span class="trade-card__rate">From ₹700/day</span>
+                  <span class="trade-card__arrow">→</span>
+                </div>
+              </div>
+
+              <div class="trade-card" data-skill="Plumber">
+                <div class="trade-card__icon trade-card__icon--plumber">🔧</div>
+                <h3>Plumber</h3>
+                <span class="trade-card__sub">प्लंबर</span>
+                <p>Pipe fitting, leakage fix, taps &amp; bathroom installations</p>
+                <div class="trade-card__footer">
+                  <span class="trade-card__rate">From ₹800/day</span>
+                  <span class="trade-card__arrow">→</span>
+                </div>
+              </div>
+
+              <div class="trade-card" data-skill="Mason">
+                <div class="trade-card__icon trade-card__icon--mason">🧱</div>
+                <h3>Mason</h3>
+                <span class="trade-card__sub">राजमिस्त्री</span>
+                <p>Brickwork, tiling, concrete construction &amp; plastering</p>
+                <div class="trade-card__footer">
+                  <span class="trade-card__rate">From ₹1000/day</span>
+                  <span class="trade-card__arrow">→</span>
+                </div>
+              </div>
+
+              <div class="trade-card" data-skill="Painter">
+                <div class="trade-card__icon trade-card__icon--painter">🎨</div>
+                <h3>Painter</h3>
+                <span class="trade-card__sub">पेंटर</span>
+                <p>Interior wall painting, putty, texture &amp; exterior finish</p>
+                <div class="trade-card__footer">
+                  <span class="trade-card__rate">From ₹750/day</span>
+                  <span class="trade-card__arrow">→</span>
+                </div>
+              </div>
+
+              <div class="trade-card" data-skill="Carpenter">
+                <div class="trade-card__icon trade-card__icon--carpenter">🪚</div>
+                <h3>Carpenter</h3>
+                <span class="trade-card__sub">बढ़ई</span>
+                <p>Furniture creation, door repair, wardrobes &amp; woodwork</p>
+                <div class="trade-card__footer">
+                  <span class="trade-card__rate">From ₹950/day</span>
+                  <span class="trade-card__arrow">→</span>
+                </div>
+              </div>
+
+              <div class="trade-card" data-skill="Welder">
+                <div class="trade-card__icon trade-card__icon--welder">🔥</div>
+                <h3>Welder</h3>
+                <span class="trade-card__sub">वेल्डर</span>
+                <p>Grill welding, metal gates, structural steel &amp; fabrication</p>
+                <div class="trade-card__footer">
+                  <span class="trade-card__rate">From ₹900/day</span>
+                  <span class="trade-card__arrow">→</span>
+                </div>
+              </div>
+
+              <div class="trade-card" data-skill="AC Repair">
+                <div class="trade-card__icon trade-card__icon--ac">❄️</div>
+                <h3>AC Repair</h3>
+                <span class="trade-card__sub">एसी सर्विस</span>
+                <p>Cooling repair, gas refilling, installation &amp; servicing</p>
+                <div class="trade-card__footer">
+                  <span class="trade-card__rate">From ₹600/day</span>
+                  <span class="trade-card__arrow">→</span>
+                </div>
+              </div>
+
+              <div class="trade-card" data-skill="Construction Worker">
+                <div class="trade-card__icon trade-card__icon--construction">🏗️</div>
+                <h3>Construction Labour</h3>
+                <span class="trade-card__sub">मजदूर / लेबर</span>
+                <p>Site loading, excavation, debris cleaning &amp; site assistance</p>
+                <div class="trade-card__footer">
+                  <span class="trade-card__rate">From ₹550/day</span>
+                  <span class="trade-card__arrow">→</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Featured Worker Cards Showcase Section -->
+          <section class="section-block section-block--dark" id="featured-workers-section">
+            <div class="section-block__label">
+              <span class="section-block__badge">Live Workers • उपलब्ध कामगार</span>
+              <h2 class="section-block__title">Top Rated Skilled Workers Ready Today</h2>
+              <p class="section-block__subtitle">Call or WhatsApp verified workers directly without any agent fees</p>
+            </div>
+
+            <!-- Home Worker Showcase Grid -->
+            <div class="labour-grid" id="home-labour-showcase">
+              <!-- Dynamically rendered via JS -->
+            </div>
+
+            <div class="section-block__cta-wrap">
+              <button class="button-v2 button-v2--primary" data-action="show-browse-workers">
+                <span>View All Verified Workers (सभी कामगार देखें) →</span>
+              </button>
+            </div>
+          </section>
+
+          <!-- Why Choose Us -->
+          <section class="section-block" id="why-choose-us">
+            <div class="section-block__label">
+              <span class="section-block__badge">Why Choose Shramik Setu</span>
+              <h2 class="section-block__title">Empowering Workers &amp; Simplifying Hiring</h2>
+              <p class="section-block__subtitle">A direct bridge between hard-working skilled workers and homeowners/contractors</p>
+            </div>
+            <div class="features-v2">
+              <div class="feature-v2">
+                <div class="feature-v2__icon-wrap feature-v2__icon-wrap--amber">
+                  👷
+                </div>
+                <h3>100% Wage Dignity (दहाड़ी का सही दाम)</h3>
+                <p>Workers set their own daily charges. Zero cuts, zero commissions. All earnings go directly to the worker's hands.</p>
+                <span class="feature-v2__tag feature-v2__tag--amber">Direct Earnings</span>
+              </div>
+              <div class="feature-v2">
+                <div class="feature-v2__icon-wrap feature-v2__icon-wrap--blue">
+                  📞
+                </div>
+                <h3>Direct Call &amp; WhatsApp</h3>
+                <p>Get phone numbers immediately. Call workers directly to discuss site work, timing, and wages without waiting.</p>
+                <span class="feature-v2__tag feature-v2__tag--blue">Instant Connection</span>
+              </div>
+              <div class="feature-v2">
+                <div class="feature-v2__icon-wrap feature-v2__icon-wrap--green">
+                  🛡️
+                </div>
+                <h3>Aadhaar &amp; Skill Verified</h3>
+                <p>Verified profile credentials ensure peace of mind for house owners, builders, and commercial project managers.</p>
+                <span class="feature-v2__tag feature-v2__tag--green">100% Verified Profiles</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- How It Works -->
+          <section class="section-block section-block--panel" id="how-it-works">
+            <div class="section-block__label">
+              <span class="section-block__badge section-block__badge--gold">Simple 3-Step Process</span>
+              <h2 class="section-block__title">How Shramik Setu Works</h2>
+              <p class="section-block__subtitle">Built simple and intuitive for both workers and customers</p>
+            </div>
+
+            <div class="steps-v2">
+              <div class="step-v2">
+                <div class="step-v2__number">1</div>
+                <div class="step-v2__content">
+                  <h4>Register Profile (रजिस्ट्रेशन)</h4>
+                  <p>Workers list their trade, location &amp; daily rate in 1 minute. Customers log in to search.</p>
+                </div>
+              </div>
+              <div class="step-v2">
+                <div class="step-v2__number">2</div>
+                <div class="step-v2__content">
+                  <h4>Search &amp; Connect (सर्च करें)</h4>
+                  <p>Filter nearby electricians, masons or painters by rating, city, and daily rate.</p>
+                </div>
+              </div>
+              <div class="step-v2">
+                <div class="step-v2__number">3</div>
+                <div class="step-v2__content">
+                  <h4>Work &amp; Direct Pay (काम और सीधी अदायगी)</h4>
+                  <p>Worker completes the task and receives direct daily payment from the customer!</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Stats Section -->
+          <section class="stats-v2">
+            <div class="stats-v2__grid">
+              <div class="stats-v2__item">
+                <div class="stats-v2__icon stats-v2__icon--amber">👷</div>
+                <strong id="live-stat-workers">0</strong>
+                <span>Verified Workers</span>
+              </div>
+              <div class="stats-v2__divider"></div>
+              <div class="stats-v2__item">
+                <div class="stats-v2__icon stats-v2__icon--green">💰</div>
+                <strong>₹500-2500</strong>
+                <span>Daily Wage Rates</span>
+              </div>
+              <div class="stats-v2__divider"></div>
+              <div class="stats-v2__item">
+                <div class="stats-v2__icon stats-v2__icon--blue">⚡</div>
+                <strong>100%</strong>
+                <span>Direct Contact</span>
+              </div>
+              <div class="stats-v2__divider"></div>
+              <div class="stats-v2__item">
+                <div class="stats-v2__icon stats-v2__icon--purple">🤝</div>
+                <strong>0%</strong>
+                <span>Middleman Fee</span>
+              </div>
+            </div>
+            <div class="stats-v2__footer">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1l2 4.5 5 .7-3.6 3.5.85 5L8 12.5 3.75 14.7l.85-5L1 6.2l5-.7L8 1z" fill="#f59e0b"/></svg>
+              Empowering skilled Indian workers across Pune, Mumbai, Delhi, Jaipur, Nashik &amp; more
+            </div>
+          </section>
+
+          <!-- Worker Registration Banner -->
+          <section class="worker-cta-banner">
+            <div class="worker-cta-banner__inner">
+              <div class="worker-cta-banner__text">
+                <h2>क्या आप एक कुशल कामगार हैं? (Are you a skilled worker?)</h2>
+                <p>आज ही श्रमिक सेतु पर अपना कार्ड बनाएं और सीधा ग्राहक से काम पाएं। कोई दलाल नहीं, पूरा फायदा आपका!</p>
+              </div>
+              <button class="button-v2 button-v2--primary" data-action="show-labour-register">
+                <span>👷 Register as Worker Free →</span>
+              </button>
+            </div>
+          </section>
+
+        </div> <!-- End landing sections -->
+
+        <!-- Dashboards Container -->
+        <div id="dashboard-container">
+
+          <!-- Labour Dashboard -->
+          <section class="dashboard hidden" id="labour-dashboard-view">
+            <div class="labour-welcome-banner">
+              <div class="labour-welcome-banner__left">
+                <div class="labour-welcome-banner__avatar">
+                  <img id="labour-photo-preview" class="profile-photo hidden" alt="Labour profile photo" />
+                  <div class="profile-photo profile-photo--placeholder" id="labour-photo-placeholder">RK</div>
+                </div>
+                <div class="labour-welcome-banner__info">
+                  <h2 id="labour-dashboard-title">Welcome, Worker</h2>
+                  <p id="labour-profile-meta">Electrician • Pune, Wakad</p>
+                  <span class="status-badge status-badge--active"><span class="status-dot"></span> Available for Work Today</span>
+                </div>
+              </div>
+              <button class="button button--ghost" data-action="logout-labour">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:6px;"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                Logout
+              </button>
+            </div>
+
+            <!-- Labour Quick Stats Cards -->
+            <div class="labour-quick-stats">
+              <div class="labour-quick-stats__card">
+                <div class="labour-quick-stats__icon">💰</div>
+                <div>
+                  <span class="labour-quick-stats__value" id="dashboard-current-rate">₹0</span>
+                  <span class="labour-quick-stats__label">Daily Wage (दहाड़ी)</span>
+                </div>
+              </div>
+              <div class="labour-quick-stats__card">
+                <div class="labour-quick-stats__icon">🕐</div>
+                <div>
+                  <span class="labour-quick-stats__value" id="dashboard-current-hours">9 AM - 6 PM</span>
+                  <span class="labour-quick-stats__label">Shift Hours</span>
+                </div>
+              </div>
+              <div class="labour-quick-stats__card labour-quick-stats__card--highlight">
+                <div class="labour-quick-stats__icon">⭐</div>
+                <div>
+                  <span class="labour-quick-stats__value">4.9 / 5.0</span>
+                  <span class="labour-quick-stats__label">Customer Rating</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Summary Strip -->
+            <div class="labour-summary-strip">
+              <div class="labour-summary-strip__item">
+                <span class="labour-summary-strip__icon">🔧</span>
+                <div>
+                  <span class="labour-summary-strip__label">Trade Skill</span>
+                  <strong id="summary-skill">-</strong>
+                </div>
+              </div>
+              <div class="labour-summary-strip__divider"></div>
+              <div class="labour-summary-strip__item">
+                <span class="labour-summary-strip__icon">💵</span>
+                <div>
+                  <span class="labour-summary-strip__label">Daily Rate</span>
+                  <strong id="summary-cost" class="highlight">₹0</strong>
+                </div>
+              </div>
+              <div class="labour-summary-strip__divider"></div>
+              <div class="labour-summary-strip__item">
+                <span class="labour-summary-strip__icon">📱</span>
+                <div>
+                  <span class="labour-summary-strip__label">Phone Number</span>
+                  <strong id="summary-phone">-</strong>
+                </div>
+              </div>
+              <div class="labour-summary-strip__divider"></div>
+              <div class="labour-summary-strip__item">
+                <span class="labour-summary-strip__icon">✉️</span>
+                <div>
+                  <span class="labour-summary-strip__label">Email</span>
+                  <strong id="summary-email">-</strong>
+                </div>
+            </div>
+
+            <!-- Incoming Job Requests Section -->
+            <div class="labour-edit-section" style="margin-bottom: 24px;">
+              <div class="labour-edit-section__header">
+                <div>
+                  <h4>⚡ Incoming Job & Hiring Requests (नये काम के अनुरोध)</h4>
+                  <p>Accept or reject direct hiring requests from customers in real-time</p>
+                </div>
+              </div>
+              <div class="requests-grid" id="labour-requests-list">
+                <div class="empty-state">
+                  <div class="empty-state__icon">📋</div>
+                  <h3>No pending job requests</h3>
+                  <p>When customers hire you directly, job requests will appear here instantly!</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Profile Editor Form -->
+            <div class="labour-edit-section">
+              <form class="profile-editor" id="labour-profile-form">
+                <div class="labour-edit-section__header">
+                  <div>
+                    <h4>Edit Worker Profile &amp; Rate Card</h4>
+                    <p>Keep your daily rate and location updated so nearby customers can call you instantly</p>
+                  </div>
+                </div>
+
+                <div class="form-grid">
+                  <label>
+                    <span>Full Name</span>
+                    <input type="text" name="name" autocomplete="name" required />
+                  </label>
+                  <label>
+                    <span>Trade Skill</span>
+                    <select name="skill" required>
+                      <option value="">Select skill</option>
+                      <option value="Electrician">Electrician (इलेक्ट्रीशियन)</option>
+                      <option value="Plumber">Plumber (प्लंबर)</option>
+                      <option value="Carpenter">Carpenter (बढ़ई)</option>
+                      <option value="Mason">Mason (राजमिस्त्री)</option>
+                      <option value="Painter">Painter (पेंटर)</option>
+                      <option value="Welder">Welder (वेल्डर)</option>
+                      <option value="AC Repair">AC Repair</option>
+                      <option value="Mechanic">Mechanic</option>
+                      <option value="Driver">Driver</option>
+                      <option value="Gardener">Gardener</option>
+                      <option value="Cleaner">Cleaner</option>
+                      <option value="Security Guard">Security Guard</option>
+                      <option value="Construction Worker">Construction Labour</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span>Email</span>
+                    <input type="email" name="email" autocomplete="email" required />
+                  </label>
+                  <label>
+                    <span>Daily Rate (₹/day)</span>
+                    <input type="number" name="cost" min="100" required />
+                  </label>
+                  <label>
+                    <span>Phone (Mobile Number)</span>
+                    <input type="tel" name="phone" autocomplete="tel" required />
+                  </label>
+                  <label>
+                    <span>Location (City / Area)</span>
+                    <input type="text" name="location" autocomplete="address-level2" required />
+                  </label>
+                  <label>
+                    <span>Working Hours</span>
+                    <input type="text" name="hours" value="9:00 AM - 6:00 PM" required />
+                  </label>
+                </div>
+
+                <label class="file-upload">
+                  <span>Update Profile Photo / Site Photo</span>
+                  <input type="file" name="photo" accept="image/*" />
+                </label>
+
+                <label>
+                  <span>Work Experience &amp; Details</span>
+                  <textarea name="about" rows="4"></textarea>
+                </label>
+
+                <div class="labour-edit-section__actions">
+                  <button type="submit" class="button button--primary">Save Profile Details</button>
+                  <button type="button" class="button button--danger" id="delete-profile-btn">Delete Worker Profile</button>
+                </div>
+              </form>
+            </div>
+          </section>
+
+          <!-- Customer Dashboard / Browse Workers View -->
+          <section class="dashboard dashboard--wide hidden" id="customer-dashboard-view">
+            <!-- Search & Filter Hero -->
+            <div class="cust-search-hero">
+              <div class="cust-search-hero__inner">
+                <div class="cust-search-hero__text">
+                  <h2 class="cust-search-hero__title">Find Verified Workers Nearby</h2>
+                  <p class="cust-search-hero__subtitle">Search skilled workers by trade name, city location, or daily wage rate</p>
+                </div>
+                <div class="cust-search-bar">
+                  <div class="cust-search-bar__input-wrap">
+                    <svg class="cust-search-bar__icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                    <input type="text" id="labour-search" placeholder="Search by name, trade skill (e.g. Electrician), or city (e.g. Pune)..." />
+                  </div>
+                  <div class="cust-search-bar__filter">
+                    <select id="skill-filter">
+                      <option value="all">All Skills / Trades</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="cust-stats-strip">
+              <div class="cust-stats-strip__item">
+                <span class="cust-stats-strip__icon">👷</span>
+                <div>
+                  <strong id="worker-count">0</strong>
+                  <span>Active Workers</span>
+                </div>
+              </div>
+              <div class="cust-stats-strip__divider"></div>
+              <div class="cust-stats-strip__item">
+                <span class="cust-stats-strip__icon">⚡</span>
+                <div>
+                  <strong id="skill-count">0</strong>
+                  <span>Trade Categories</span>
+                </div>
+              </div>
+              <div class="cust-stats-strip__divider"></div>
+              <div class="cust-stats-strip__item">
+                <span class="cust-stats-strip__icon">✅</span>
+                <div>
+                  <strong>100%</strong>
+                  <span>Verified Credentials</span>
+                </div>
+              </div>
+              <div class="cust-stats-strip__divider"></div>
+              <div class="cust-stats-strip__item">
+                <span class="cust-stats-strip__icon">📞</span>
+                <div>
+                  <strong>Direct</strong>
+                  <span>Call &amp; WhatsApp</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Profile Info Bar -->
+            <div class="cust-profile-bar">
+              <div class="cust-profile-bar__left">
+                <div class="cust-profile-bar__avatar">
+                  <span>🏠</span>
+                </div>
+                <div class="cust-profile-bar__info">
+                  <h3>Hire Skilled Workers</h3>
+                  <p>Click any worker card to call or send a WhatsApp message directly</p>
+                </div>
+                <span class="status-badge status-badge--active"><span class="status-dot"></span> Live Workforce Directory</span>
+              </div>
+              <button class="button button--ghost" data-action="logout-customer">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:6px;"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                Logout
+              </button>
+            </div>
+
+            <!-- Worker Directory Cards Grid -->
+            <div class="labour-grid" id="labour-list"></div>
+          </section>
+
+          <!-- Admin Dashboard View -->
+          <section class="dashboard dashboard--wide hidden" id="admin-dashboard-view">
+            <div class="labour-welcome-banner">
+              <div class="labour-welcome-banner__left">
+                <div class="cust-profile-bar__avatar">
+                  <span>🛡️</span>
+                </div>
+                <div class="labour-welcome-banner__info">
+                  <h2>Admin Control Center (प्रशासन पैनल)</h2>
+                  <p>Manage worker verification, moderate platform users, and view database analytics</p>
+                </div>
+              </div>
+              <button class="button button--ghost" data-action="logout-admin">
+                Logout Admin
+              </button>
+            </div>
+
+            <!-- Admin Stats Row -->
+            <div class="admin-grid">
+              <div class="admin-stat-card">
+                <div class="admin-stat-card__val" id="admin-stat-workers">0</div>
+                <div class="admin-stat-card__lbl">Total Registered Workers</div>
+              </div>
+              <div class="admin-stat-card">
+                <div class="admin-stat-card__val" id="admin-stat-customers">0</div>
+                <div class="admin-stat-card__lbl">Total Registered Customers</div>
+              </div>
+              <div class="admin-stat-card">
+                <div class="admin-stat-card__val" id="admin-stat-pending">0</div>
+                <div class="admin-stat-card__lbl">Pending Verification Requests</div>
+              </div>
+              <div class="admin-stat-card">
+                <div class="admin-stat-card__val" id="admin-stat-jobs">0</div>
+                <div class="admin-stat-card__lbl">Total Bookings & Jobs</div>
+              </div>
+            </div>
+
+            <!-- Pending Verification Requests Table -->
+            <div class="labour-edit-section" style="margin-bottom: 24px;">
+              <div class="labour-edit-section__header">
+                <h4>🛡️ Worker Verification Management (Aadhaar & Profile Approvals)</h4>
+              </div>
+              <div class="admin-table-wrap">
+                <table class="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Worker Name</th>
+                      <th>Trade Skill</th>
+                      <th>City Location</th>
+                      <th>Aadhaar Number</th>
+                      <th>Daily Wage</th>
+                      <th>Verification Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="admin-verification-list">
+                    <tr>
+                      <td colspan="7" style="text-align: center; color: var(--muted); padding: 20px;">No pending verification requests.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- All Users Table -->
+            <div class="labour-edit-section">
+              <div class="labour-edit-section__header">
+                <h4>👥 Platform User Directory</h4>
+              </div>
+              <div class="admin-table-wrap">
+                <table class="admin-table">
+                  <thead>
+                    <tr>
+                      <th>User Name</th>
+                      <th>Email</th>
+                      <th>Role</th>
+                      <th>Phone</th>
+                      <th>Registered On</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="admin-users-list">
+                    <tr>
+                      <td colspan="6" style="text-align: center; color: var(--muted); padding: 20px;">Loading users list...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+
+      <footer class="app-footer">
+        <div class="app-footer__inner">
+          <div class="app-footer__brand">
+            <strong>Shramik Setu (श्रमिक सेतु)</strong> — Direct Skilled Workforce Platform for India.
+          </div>
+          <p>© 2026 Shramik Setu. Empowering workers with 100% direct daily wage hiring.</p>
+        </div>
+      </footer>
+    </div>
+
+    <!-- Notification Toast -->
+    <div class="toast hidden" id="toast"></div>
+
+    <!-- Photo Modal Preview -->
+    <div class="modal-overlay hidden" id="photo-modal">
+      <div class="modal-content">
+        <span class="modal-close" data-action="close-modal">&times;</span>
+        <img id="modal-photo" src="" alt="Labour photo" />
+      </div>
+    </div>
+
+    <!-- Direct Hire Worker Modal -->
+    <div class="modal-overlay hidden" id="hire-modal">
+      <div class="modal-form">
+        <span class="modal-close" data-action="close-hire-modal">&times;</span>
+        <h3>Hire Skilled Worker (काम पर बुलाएं)</h3>
+        <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 16px;" id="hire-worker-name">Worker Name</p>
+        <form id="hire-worker-form">
+          <input type="hidden" id="hire-worker-id" name="worker_id" />
+          <div class="form-group">
+            <label for="hire-job-title">Job Title / Work Description</label>
+            <input type="text" id="hire-job-title" name="title" placeholder="e.g. Electrical MCB box fitting & house wiring" required />
+          </div>
+          <div class="form-group">
+            <label for="hire-job-location">Work Site Address / Location</label>
+            <input type="text" id="hire-job-location" name="location" placeholder="e.g. Wakad, Pune" required />
+          </div>
+          <div class="form-group">
+            <label for="hire-job-date">Preferred Date</label>
+            <input type="date" id="hire-job-date" name="booking_date" required />
+          </div>
+          <div class="form-group">
+            <label for="hire-job-notes">Special Instructions / Details</label>
+            <textarea id="hire-job-notes" name="notes" rows="3" placeholder="Provide extra details for the worker..."></textarea>
+          </div>
+          <button type="submit" class="button-v2 button-v2--primary" style="width: 100%; margin-top: 12px;">
+            <span>Send Direct Job Request →</span>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Secret Admin Authentication Modal -->
+    <div class="modal-overlay hidden" id="admin-secret-modal">
+      <div class="modal-form" style="max-width: 400px; text-align: center; border: 1px solid rgba(239, 68, 68, 0.3); background: rgba(15, 23, 42, 0.95);">
+        <span class="modal-close" data-action="close-admin-secret-modal">&times;</span>
+        <div style="font-size: 2.8rem; margin-bottom: 6px;">🛡️</div>
+        <h3 style="color: #f87171; font-weight: 700; margin-bottom: 4px;">Admin Security Gate</h3>
+        <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 20px;">Restricted Access • Enter Secret Passcode</p>
+        <form id="admin-secret-form">
+          <div class="form-group" style="text-align: left; margin-bottom: 16px;">
+            <label for="admin-passcode" style="color: #cbd5e1; font-size: 0.85rem; font-weight: 600;">Secret Admin Passcode / Key</label>
+            <input type="password" id="admin-passcode" name="passcode" placeholder="Enter passcode (Default: admin123)" required autocomplete="off" style="background: rgba(2, 6, 23, 0.8); border: 1px solid rgba(239, 68, 68, 0.4); color: #fff; padding: 12px; border-radius: 8px; width: 100%; font-size: 1rem;" />
+          </div>
+          <button type="submit" class="button-v2" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #ef4444, #b91c1c); color: white; border: none; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <span>Unlock Admin Panel 🔓</span>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./app.js"></script>
+    <script src="./animations-3d.js"></script>
+  </body>
+</html>
