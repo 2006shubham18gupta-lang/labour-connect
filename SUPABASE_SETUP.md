@@ -125,3 +125,47 @@ insert into public.users (email, full_name, phone, role)
 values ('admin@shramiksetu.com', 'System Admin', '+91 9999999999', 'admin')
 on conflict (email) do nothing;
 ```
+
+---
+
+## Live GPS Tracking — `user_locations` Table
+
+Run the SQL from **`LIVE_LOCATION_SETUP.sql`** in the Supabase SQL Editor to create the live location tracking table.
+
+Or copy below:
+
+```sql
+-- Create user_locations table
+CREATE TABLE IF NOT EXISTS public.user_locations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES public.users(id) ON DELETE CASCADE NOT NULL UNIQUE,
+  role TEXT NOT NULL CHECK (role IN ('customer', 'labour', 'worker', 'admin')),
+  latitude DOUBLE PRECISION NOT NULL,
+  longitude DOUBLE PRECISION NOT NULL,
+  accuracy DOUBLE PRECISION,
+  heading DOUBLE PRECISION,
+  speed DOUBLE PRECISION,
+  online_status BOOLEAN DEFAULT true,
+  last_updated TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+);
+
+-- Indexes
+CREATE INDEX IF NOT EXISTS idx_user_locations_user_id ON public.user_locations(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_locations_online ON public.user_locations(online_status);
+
+-- Enable RLS
+ALTER TABLE public.user_locations ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policies (public read/write for this app's auth model)
+CREATE POLICY "Public read user_locations" ON public.user_locations FOR SELECT USING (true);
+CREATE POLICY "Users can insert own location" ON public.user_locations FOR INSERT WITH CHECK (true);
+CREATE POLICY "Users can update own location" ON public.user_locations FOR UPDATE USING (true) WITH CHECK (true);
+CREATE POLICY "Users can delete own location" ON public.user_locations FOR DELETE USING (true);
+
+-- Enable Supabase Realtime
+ALTER PUBLICATION supabase_realtime ADD TABLE public.user_locations;
+```
+
+**Important:** You must also enable Realtime for the `user_locations` table in:
+- Supabase Dashboard → Database → Replication → Enable for `user_locations`

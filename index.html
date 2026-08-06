@@ -10,10 +10,11 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Shramik Setu" />
     <link rel="icon" type="image/x-icon" href="./favicon.ico" />
-    <!-- Modern Typography Google Fonts -->
+    <!-- Modern Typography Google Fonts & Lucide Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
@@ -75,6 +76,10 @@
             Register as Worker
           </button>
         </nav>
+
+        <button class="topbar__mobile-toggle" id="mobile-nav-toggle" aria-label="Toggle Navigation">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
       </header>
 
       <main id="app">
@@ -648,12 +653,14 @@
             </div>
           </section>
 
+
+
           <!-- Worker Registration Banner -->
           <section class="worker-cta-banner">
             <div class="worker-cta-banner__inner">
               <div class="worker-cta-banner__text">
                 <h2>क्या आप एक कुशल कामगार हैं? (Are you a skilled worker?)</h2>
-                <p>आज ही श्रमिक सेतु पर अपना कार्ड बनाएं और सीधा ग्राहक से काम पाएं। कोई दलाल नहीं, पूरा फायदा आपका!</p>
+                <p>आज ही श्रमिक सेतु पर अपना मुफ्त कार्ड बनाएं और सीधा ग्राहक से काम पाएं। कोई दलाल नहीं, पूरा फायदा आपका!</p>
               </div>
               <button class="button-v2 button-v2--primary" data-action="show-labour-register">
                 <span>👷 Register as Worker Free →</span>
@@ -918,45 +925,79 @@
 
           <!-- Admin Dashboard View -->
           <section class="dashboard dashboard--wide hidden" id="admin-dashboard-view">
-            <div class="labour-welcome-banner">
+            <div class="labour-welcome-banner admin-header-banner">
               <div class="labour-welcome-banner__left">
-                <div class="cust-profile-bar__avatar">
+                <div class="cust-profile-bar__avatar admin-avatar">
                   <span>🛡️</span>
                 </div>
                 <div class="labour-welcome-banner__info">
-                  <h2>Admin Control Center (प्रशासन पैनल)</h2>
-                  <p>Manage worker verification, moderate platform users, and view database analytics</p>
+                  <div class="admin-header-title-wrap">
+                    <h2>Admin Control Center <span class="admin-title-hindi">(प्रशासन पैनल)</span></h2>
+                    <span class="admin-sys-status-badge"><span class="status-dot status-dot--pulse"></span> SYSTEM ACTIVE • SUPABASE REALTIME</span>
+                  </div>
+                  <p>Manage worker verification, moderate platform users, and track real-time workforce geolocation</p>
                 </div>
               </div>
-              <button class="button button--ghost" data-action="logout-admin">
-                Logout Admin
-              </button>
+              <div class="admin-header-actions">
+                <button class="admin-tab-btn admin-tab-btn--active" id="admin-tab-overview" onclick="switchAdminTab('overview')">
+                  <span class="admin-tab-btn__icon">📊</span> Overview &amp; Users
+                </button>
+                <button class="admin-tab-btn" id="admin-tab-livemap" onclick="switchAdminTab('livemap')">
+                  <span class="admin-tab-btn__icon">🗺️</span> Live Map Radar
+                </button>
+                <button class="admin-logout-btn" data-action="logout-admin">
+                  Logout Admin 🚪
+                </button>
+              </div>
             </div>
 
+          <div id="admin-overview-tab">
             <!-- Admin Stats Row -->
             <div class="admin-grid">
-              <div class="admin-stat-card">
+              <div class="admin-stat-card admin-stat-card--workers">
+                <div class="admin-stat-card__top">
+                  <span class="admin-stat-card__icon">👷</span>
+                  <span class="admin-stat-card__trend admin-stat-card__trend--up">+100% Direct</span>
+                </div>
                 <div class="admin-stat-card__val" id="admin-stat-workers">0</div>
                 <div class="admin-stat-card__lbl">Total Registered Workers</div>
               </div>
-              <div class="admin-stat-card">
+              <div class="admin-stat-card admin-stat-card--customers">
+                <div class="admin-stat-card__top">
+                  <span class="admin-stat-card__icon">🏠</span>
+                  <span class="admin-stat-card__trend admin-stat-card__trend--blue">Verified</span>
+                </div>
                 <div class="admin-stat-card__val" id="admin-stat-customers">0</div>
                 <div class="admin-stat-card__lbl">Total Registered Customers</div>
               </div>
-              <div class="admin-stat-card">
+              <div class="admin-stat-card admin-stat-card--pending">
+                <div class="admin-stat-card__top">
+                  <span class="admin-stat-card__icon">🛡️</span>
+                  <span class="admin-stat-card__trend admin-stat-card__trend--amber">Action Required</span>
+                </div>
                 <div class="admin-stat-card__val" id="admin-stat-pending">0</div>
                 <div class="admin-stat-card__lbl">Pending Verification Requests</div>
               </div>
-              <div class="admin-stat-card">
+              <div class="admin-stat-card admin-stat-card--jobs">
+                <div class="admin-stat-card__top">
+                  <span class="admin-stat-card__icon">💼</span>
+                  <span class="admin-stat-card__trend admin-stat-card__trend--green">Active Site Work</span>
+                </div>
                 <div class="admin-stat-card__val" id="admin-stat-jobs">0</div>
-                <div class="admin-stat-card__lbl">Total Bookings & Jobs</div>
+                <div class="admin-stat-card__lbl">Total Bookings &amp; Jobs</div>
               </div>
             </div>
 
             <!-- Pending Verification Requests Table -->
-            <div class="labour-edit-section" style="margin-bottom: 24px;">
-              <div class="labour-edit-section__header">
-                <h4>🛡️ Worker Verification Management (Aadhaar & Profile Approvals)</h4>
+            <div class="labour-edit-section admin-table-card" style="margin-bottom: 24px;">
+              <div class="labour-edit-section__header admin-table-header">
+                <div class="admin-table-title">
+                  <span class="admin-table-icon">🛡️</span>
+                  <div>
+                    <h4>Worker Verification Management (Aadhaar &amp; Profile Approvals)</h4>
+                    <p class="admin-table-subtitle">Review new worker profiles and issue Aadhaar verified badges</p>
+                  </div>
+                </div>
               </div>
               <div class="admin-table-wrap">
                 <table class="admin-table">
@@ -973,7 +1014,7 @@
                   </thead>
                   <tbody id="admin-verification-list">
                     <tr>
-                      <td colspan="7" style="text-align: center; color: var(--muted); padding: 20px;">No pending verification requests.</td>
+                      <td colspan="7" style="text-align: center; color: var(--muted); padding: 24px;">No pending verification requests. All workers verified!</td>
                     </tr>
                   </tbody>
                 </table>
@@ -981,9 +1022,18 @@
             </div>
 
             <!-- All Users Table -->
-            <div class="labour-edit-section">
-              <div class="labour-edit-section__header">
-                <h4>👥 Platform User Directory</h4>
+            <div class="labour-edit-section admin-table-card">
+              <div class="labour-edit-section__header admin-table-header">
+                <div class="admin-table-title">
+                  <span class="admin-table-icon">👥</span>
+                  <div>
+                    <h4>Platform User Directory &amp; Live Status</h4>
+                    <p class="admin-table-subtitle">View all registered accounts, role permissions &amp; live GPS pins</p>
+                  </div>
+                </div>
+                <button class="btn-refresh-locations" onclick="refreshAllLocations()">
+                  <span>🔄 Refresh Locations</span>
+                </button>
               </div>
               <div class="admin-table-wrap">
                 <table class="admin-table">
@@ -993,28 +1043,223 @@
                       <th>Email</th>
                       <th>Role</th>
                       <th>Phone</th>
+                      <th>📍 Live Location</th>
                       <th>Registered On</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody id="admin-users-list">
                     <tr>
-                      <td colspan="6" style="text-align: center; color: var(--muted); padding: 20px;">Loading users list...</td>
+                      <td colspan="7" style="text-align: center; color: var(--muted); padding: 24px;">Loading users list...</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
             </div>
+          </div> <!-- End admin-overview-tab -->
+
+          <!-- ═══════════════════════════════════════════════ -->
+          <!-- ADMIN LIVE MAP TAB -->
+          <!-- ═══════════════════════════════════════════════ -->
+          <div id="admin-livemap-tab" class="hidden">
+            <!-- Live Map Stats Bar -->
+            <div class="livemap-stats-bar">
+              <div class="livemap-stats-bar__item">
+                <div class="livemap-stats-bar__icon livemap-stats-bar__icon--blue">📡</div>
+                <div>
+                  <strong id="livemap-stat-total">0</strong>
+                  <span>Total Tracked</span>
+                </div>
+              </div>
+              <div class="livemap-stats-bar__divider"></div>
+              <div class="livemap-stats-bar__item">
+                <div class="livemap-stats-bar__icon livemap-stats-bar__icon--green">🟢</div>
+                <div>
+                  <strong id="livemap-stat-online">0</strong>
+                  <span>Online Now</span>
+                </div>
+              </div>
+              <div class="livemap-stats-bar__divider"></div>
+              <div class="livemap-stats-bar__item">
+                <div class="livemap-stats-bar__icon livemap-stats-bar__icon--gray">🔴</div>
+                <div>
+                  <strong id="livemap-stat-offline">0</strong>
+                  <span>Offline</span>
+                </div>
+              </div>
+              <div class="livemap-stats-bar__divider"></div>
+              <div class="livemap-stats-bar__item">
+                <div class="livemap-stats-bar__icon livemap-stats-bar__icon--customer">🏠</div>
+                <div>
+                  <strong id="livemap-stat-customers">0</strong>
+                  <span>Customers</span>
+                </div>
+              </div>
+              <div class="livemap-stats-bar__divider"></div>
+              <div class="livemap-stats-bar__item">
+                <div class="livemap-stats-bar__icon livemap-stats-bar__icon--worker">👷</div>
+                <div>
+                  <strong id="livemap-stat-workers">0</strong>
+                  <span>Workers</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Live Map Search & Filters -->
+            <div class="livemap-controls">
+              <div class="livemap-controls__search">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                <input type="text" id="livemap-search" placeholder="Search by name, phone, user ID, role, online/offline..." />
+              </div>
+              <div class="livemap-controls__filters">
+                <select id="livemap-role-filter">
+                  <option value="all">All Roles</option>
+                  <option value="customer">🏠 Customers</option>
+                  <option value="worker">👷 Workers / Labour</option>
+                </select>
+                <select id="livemap-status-filter">
+                  <option value="all">All Status</option>
+                  <option value="online">🟢 Online</option>
+                  <option value="offline">🔴 Offline</option>
+                </select>
+                <button class="livemap-controls__refresh" onclick="LiveMap.refresh()">
+                  🔄 Refresh
+                </button>
+              </div>
+            </div>
+
+            <!-- The Futuristic Leaflet Map Container with Scanner Line Beam -->
+            <div class="livemap-container" id="livemap-container-frame">
+              <!-- HUD Target Reticle Corner Highlights -->
+              <div class="hud-corner hud-corner--top-left"></div>
+              <div class="hud-corner hud-corner--top-right"></div>
+              <div class="hud-corner hud-corner--bottom-left"></div>
+              <div class="hud-corner hud-corner--bottom-right"></div>
+
+              <!-- HUD Target Reticle Crosshair & Pulse Grid Overlay -->
+              <div class="hud-radar-grid">
+                <div class="hud-radar-ring hud-radar-ring--1"></div>
+                <div class="hud-radar-ring hud-radar-ring--2"></div>
+                <div class="hud-radar-ring hud-radar-ring--3"></div>
+                <div class="hud-radar-crosshair-h"></div>
+                <div class="hud-radar-crosshair-v"></div>
+              </div>
+
+              <!-- HUD Top Overlay Bar -->
+              <div class="hud-overlay-bar">
+                <div class="hud-status">
+                  <span class="hud-pulse"></span>
+                  <span class="hud-title">LIVE SATELLITE RADAR</span>
+                  <span class="hud-badge">🇮🇳 INDIA BOUNDS LOCKED</span>
+                </div>
+                <div class="hud-scanner-toggle">
+                  <button type="button" class="hud-toggle-btn active" id="toggle-scanner-btn" onclick="toggleScannerLine()">
+                    <span class="hud-toggle-dot"></span>
+                    <span id="scanner-toggle-text">Scanner Line: ON</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Animated Top-to-Bottom Laser Scanner Beam -->
+              <div class="livemap-scanner" id="livemap-scanner-beam">
+                <div class="livemap-scanner__line"></div>
+                <div class="livemap-scanner__glow"></div>
+              </div>
+
+              <div id="admin-live-map" class="livemap-map"></div>
+            </div>
+
+            <!-- Map Legend -->
+            <div class="livemap-legend">
+              <div class="livemap-legend__item">
+                <span class="livemap-legend__dot livemap-legend__dot--blue"></span>
+                <span>Customer (Online)</span>
+              </div>
+              <div class="livemap-legend__item">
+                <span class="livemap-legend__dot livemap-legend__dot--orange"></span>
+                <span>Worker / Labour (Online)</span>
+              </div>
+              <div class="livemap-legend__item">
+                <span class="livemap-legend__dot livemap-legend__dot--gray"></span>
+                <span>Offline (No update for 2+ min)</span>
+              </div>
+              <div class="livemap-legend__note" style="margin-left: auto; font-size: 0.78rem; color: #94a3b8;">
+                <span style="color: var(--amber);">⚡ Scanner Line:</span> Top-to-Bottom Live Geolocation Sweep
+              </div>
+            </div>
+          </div> <!-- End admin-livemap-tab -->
           </section>
         </div>
       </main>
 
       <footer class="app-footer">
-        <div class="app-footer__inner">
-          <div class="app-footer__brand">
-            <strong>Shramik Setu (श्रमिक सेतु)</strong> — Direct Skilled Workforce Platform for India.
+        <div class="app-footer__grid">
+          <div class="app-footer__col app-footer__col--brand">
+            <div class="brand" style="margin-bottom: 12px;">
+              <div class="brand__logo">
+                <svg width="32" height="32" viewBox="0 0 40 40" fill="none">
+                  <rect width="40" height="40" rx="10" fill="url(#brandGrad)"/>
+                  <path d="M12 24C12 18.4772 15.5817 14 20 14C24.4183 14 28 18.4772 28 24H12Z" stroke="white" stroke-width="2.5" stroke-linejoin="round"/>
+                  <rect x="9" y="24" width="22" height="3" rx="1.5" fill="white"/>
+                  <path d="M20 10V14" stroke="#fbbf24" stroke-width="2.5" stroke-linecap="round"/>
+                  <circle cx="20" cy="9" r="1.5" fill="#fbbf24"/>
+                </svg>
+              </div>
+              <div class="brand__header-wrap">
+                <h3 style="font-size: 1.2rem; margin: 0; color: #fff;">Shramik Setu</h3>
+                <span class="brand__tag-badge">श्रमिक सेतु</span>
+              </div>
+            </div>
+            <p style="color: var(--muted); font-size: 0.85rem; line-height: 1.6; margin-bottom: 16px;">
+              India's #1 Direct Skilled Workforce Platform. Connecting Masons, Electricians, Plumbers, Painters &amp; Welders directly with house owners &amp; builders without middleman agency cuts.
+            </p>
+            <div class="app-footer__socials">
+              <span class="social-chip">🇮🇳 Made with Pride for India</span>
+              <span class="social-chip">⚡ 100% Commission-Free</span>
+            </div>
           </div>
-          <p>© 2026 Shramik Setu. Empowering workers with 100% direct daily wage hiring.</p>
+
+          <div class="app-footer__col">
+            <h4>Popular Trades (सेवाएं)</h4>
+            <ul>
+              <li><a href="#" data-skill="Electrician">⚡ Electrician (इलेक्ट्रीशियन)</a></li>
+              <li><a href="#" data-skill="Plumber">🔧 Plumber (प्लंबर)</a></li>
+              <li><a href="#" data-skill="Mason">🧱 Mason (राजमिस्त्री)</a></li>
+              <li><a href="#" data-skill="Painter">🎨 Painter (पेंटर)</a></li>
+              <li><a href="#" data-skill="Carpenter">🪚 Carpenter (बढ़ई)</a></li>
+              <li><a href="#" data-skill="Welder">🔥 Welder (वेल्डर)</a></li>
+            </ul>
+          </div>
+
+          <div class="app-footer__col">
+            <h4>Quick Links (नेविगेशन)</h4>
+            <ul>
+              <li><a href="#" data-action="show-home">🏠 Home Page</a></li>
+              <li><a href="#" data-action="show-browse-workers">🔍 Browse All Workers</a></li>
+              <li><a href="#" data-action="show-labour-login">👷 Worker Sign In</a></li>
+              <li><a href="#" data-action="show-customer-login">🏠 Customer Sign In</a></li>
+              <li><a href="#" data-action="show-labour-register">⚡ Free Worker Registration</a></li>
+            </ul>
+          </div>
+
+          <div class="app-footer__col">
+            <h4>Help &amp; Support (सहायता)</h4>
+            <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 8px;">Direct Worker Helpline (टोल-फ्री):</p>
+            <div style="font-size: 1.1rem; font-weight: 700; color: var(--amber); margin-bottom: 12px;">📞 +91 1800-SETU-WORK</div>
+            <p style="color: var(--muted); font-size: 0.85rem;">Email Support: support@shramiksetu.in</p>
+            <div style="margin-top: 12px; font-size: 0.8rem; color: #10b981; display: flex; align-items: center; gap: 6px;">
+              <span class="status-dot"></span> System Live &amp; Operational
+            </div>
+          </div>
+        </div>
+
+        <div class="app-footer__bottom">
+          <p>© 2026 Shramik Setu (श्रमिक सेतु). All Rights Reserved. Empowering skilled workers across India.</p>
+          <div style="display: flex; gap: 16px; font-size: 0.8rem; color: var(--muted);">
+            <a href="#" onclick="showToast('Privacy Policy: All worker data secured in Supabase', 'info')" style="color: inherit; text-decoration: none;">Privacy Policy</a>
+            <a href="#" onclick="showToast('Terms of Service: Direct hiring platform rules apply', 'info')" style="color: inherit; text-decoration: none;">Terms of Service</a>
+            <a href="#" onclick="openAdminSecretModal()" style="color: inherit; text-decoration: none;">Admin Access 🛡️</a>
+          </div>
         </div>
       </footer>
     </div>
@@ -1071,7 +1316,7 @@
         <form id="admin-secret-form">
           <div class="form-group" style="text-align: left; margin-bottom: 16px;">
             <label for="admin-passcode" style="color: #cbd5e1; font-size: 0.85rem; font-weight: 600;">Secret Admin Passcode / Key</label>
-            <input type="password" id="admin-passcode" name="passcode" placeholder="Enter passcode (Default: admin123)" required autocomplete="off" style="background: rgba(2, 6, 23, 0.8); border: 1px solid rgba(239, 68, 68, 0.4); color: #fff; padding: 12px; border-radius: 8px; width: 100%; font-size: 1rem;" />
+            <input type="password" id="admin-passcode" name="passcode" placeholder="Enter admin passcode" required autocomplete="off" style="background: rgba(2, 6, 23, 0.8); border: 1px solid rgba(239, 68, 68, 0.4); color: #fff; padding: 12px; border-radius: 8px; width: 100%; font-size: 1rem;" />
           </div>
           <button type="submit" class="button-v2" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #ef4444, #b91c1c); color: white; border: none; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
             <span>Unlock Admin Panel 🔓</span>
@@ -1080,7 +1325,31 @@
       </div>
     </div>
 
+    <!-- Leaflet Map for Live Location -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Location Map Modal -->
+    <div class="modal-overlay hidden" id="location-map-modal">
+      <div class="modal-form" style="max-width: 650px; padding: 0; overflow: hidden; border: 1px solid rgba(59, 130, 246, 0.3); background: rgba(15, 23, 42, 0.97);">
+        <div style="padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.08);">
+          <div>
+            <h3 style="color: #60a5fa; font-weight: 700; margin: 0; font-size: 1.1rem;" id="map-modal-title">📍 User Live Location</h3>
+            <p style="color: var(--muted); font-size: 0.8rem; margin: 4px 0 0;" id="map-modal-address">Fetching address...</p>
+          </div>
+          <span class="modal-close" onclick="closeLocationModal()" style="position: static; font-size: 1.5rem; cursor: pointer;">&times;</span>
+        </div>
+        <div id="location-map" style="width: 100%; height: 400px; background: #0f172a;"></div>
+        <div style="padding: 12px 20px; display: flex; gap: 8px; border-top: 1px solid rgba(255,255,255,0.08);">
+          <a id="map-google-link" href="#" target="_blank" style="flex: 1; text-align: center; padding: 10px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.85rem;">🗺️ Open in Google Maps</a>
+          <a id="map-directions-link" href="#" target="_blank" style="flex: 1; text-align: center; padding: 10px; background: linear-gradient(135deg, #10b981, #059669); color: #fff; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.85rem;">🧭 Get Directions</a>
+        </div>
+      </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./location-service.js"></script>
+    <script src="./live-map.js"></script>
     <script src="./app.js"></script>
     <script src="./animations-3d.js"></script>
   </body>

@@ -16,6 +16,7 @@ const state = {
   currentView: "home",
   pendingRegPhoto: "",
   selectedWorkerForHire: null,
+  locationCache: {}, // userId -> { lat, lng, timestamp }
 };
 
 const VIEW_IDS = [
@@ -98,7 +99,8 @@ async function refreshAllData() {
   await Promise.all([
     fetchWorkers(),
     fetchBookings(),
-    fetchAdminUsers()
+    fetchAdminUsers(),
+    fetchUserLocations()
   ]);
 
   renderLabourList();
@@ -210,6 +212,12 @@ async function fetchAdminUsers() {
 // EVENT LISTENERS & NAVIGATION
 // ------------------------------------------------------------
 
+function renderLucideIcons() {
+  if (typeof lucide !== 'undefined' && lucide.createIcons) {
+    lucide.createIcons();
+  }
+}
+
 function setupEventListeners() {
   document.addEventListener('click', function(e) {
     const actionEl = e.target.closest('[data-action]');
@@ -224,6 +232,16 @@ function setupEventListeners() {
       filterBySkill(skillEl.dataset.skill);
     }
   });
+
+  // Mobile navigation drawer toggle
+  const mobileToggle = document.getElementById('mobile-nav-toggle');
+  const navEl = document.querySelector('.topbar__nav');
+  if (mobileToggle && navEl) {
+    mobileToggle.addEventListener('click', function() {
+      navEl.classList.toggle('topbar__nav--open');
+      mobileToggle.classList.toggle('topbar__mobile-toggle--active');
+    });
+  }
 
   if (elements.labourLoginForm) elements.labourLoginForm.addEventListener('submit', handleLabourLogin);
   if (elements.customerLoginForm) elements.customerLoginForm.addEventListener('submit', handleCustomerLogin);
@@ -304,7 +322,7 @@ function openAdminSecretModal() {
 function handleAdminSecretSubmit(e) {
   e.preventDefault();
   const passcode = (document.getElementById('admin-passcode')?.value || '').trim();
-  if (passcode === 'admin123' || passcode === 'admin' || passcode === 'shramik123') {
+  if (passcode === 'shubham18') {
     state.currentRole = 'admin';
     state.currentUser = { id: 'admin-1', full_name: 'System Admin', role: 'admin' };
     if (elements.adminSecretModal) elements.adminSecretModal.classList.add('hidden');
@@ -410,6 +428,10 @@ function showView(viewName) {
     case 'admin-dashboard':
       if (elements.adminDashboardView) elements.adminDashboardView.classList.remove('hidden');
       renderAdminPanel();
+      // Reset to overview tab when opening admin dashboard
+      if (typeof switchAdminTab === 'function') {
+        switchAdminTab('overview');
+      }
       break;
   }
 
@@ -637,6 +659,22 @@ async function handleLabourLogin(e) {
     state.currentUser = worker;
     state.currentRole = 'worker';
     e.target.reset();
+
+    // Start live GPS tracking via LocationService
+    if (typeof LocationService !== 'undefined' && supabaseClient) {
+      LocationService.init({
+        supabase: supabaseClient,
+        userId: worker.id,
+        userRole: 'worker',
+        onLocationUpdate: (pos) => {
+          console.log(`[App] Worker location updated: ${pos.latitude.toFixed(4)}, ${pos.longitude.toFixed(4)}`);
+        },
+        onError: (type, msg) => {
+          console.warn(`[App] Location error (${type}): ${msg}`);
+        },
+      });
+    }
+
     showLabourDashboard(worker);
     showToast(`Welcome back, ${worker.name}!`, 'success');
   } else {
@@ -672,6 +710,22 @@ async function handleCustomerLogin(e) {
     state.currentUser = customerUser;
     state.currentRole = 'customer';
     e.target.reset();
+
+    // Start live GPS tracking via LocationService
+    if (typeof LocationService !== 'undefined' && supabaseClient) {
+      LocationService.init({
+        supabase: supabaseClient,
+        userId: customerUser.id,
+        userRole: 'customer',
+        onLocationUpdate: (pos) => {
+          console.log(`[App] Customer location updated: ${pos.latitude.toFixed(4)}, ${pos.longitude.toFixed(4)}`);
+        },
+        onError: (type, msg) => {
+          console.warn(`[App] Location error (${type}): ${msg}`);
+        },
+      });
+    }
+
     showCustomerDashboard(customerUser);
     showToast(`Welcome back, ${customerUser.full_name}!`, 'success');
   } else {
@@ -681,6 +735,15 @@ async function handleCustomerLogin(e) {
 }
 
 function logoutUser() {
+  // Stop live GPS tracking
+  if (typeof LocationService !== 'undefined') {
+    LocationService.stop();
+  }
+  // Destroy live map if active
+  if (typeof LiveMap !== 'undefined') {
+    LiveMap.destroy();
+  }
+
   state.currentUser = null;
   state.currentRole = null;
   showView('home');
@@ -1011,20 +1074,41 @@ function renderAdminPanel() {
     }
   }
 
-  // Render Users Table
+  // Render Users Table with Location
   if (elements.adminUsersList) {
     elements.adminUsersList.innerHTML = '';
     if (state.users.length === 0) {
-      elements.adminUsersList.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--muted); padding: 20px;">No registered users found.</td></tr>`;
+      elements.adminUsersList.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--muted); padding: 20px;">No registered users found.</td></tr>`;
     } else {
       state.users.forEach(u => {
         const tr = document.createElement('tr');
         const regDate = u.created_at ? new Date(u.created_at).toLocaleDateString() : 'Recent';
+        const locData = state.locationCache[u.id];
+        const hasLocation = locData && locData.lat && locData.lng;
+        const lastSeen = hasLocation && locData.timestamp
+          ? getTimeAgo(locData.timestamp)
+          : '';
+
+        let locationCell;
+        if (hasLocation) {
+          locationCell = `
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <button class="btn-verify-approve" onclick="openLocationMap('${u.id}', '${(u.full_name || '').replace(/'/g, "\\'")}')"
+                style="font-size: 0.7rem; padding: 5px 10px; display: flex; align-items: center; gap: 4px; white-space: nowrap;">
+                📍 View Map
+              </button>
+              <span style="font-size: 0.65rem; color: #94a3b8;">🟢 ${lastSeen}</span>
+            </div>`;
+        } else {
+          locationCell = `<span style="color: #64748b; font-size: 0.75rem;">⚫ Offline</span>`;
+        }
+
         tr.innerHTML = `
           <td><strong>${u.full_name}</strong></td>
           <td>${u.email}</td>
           <td><span class="badge-approved">${u.role.toUpperCase()}</span></td>
           <td>${u.phone || '-'}</td>
+          <td>${locationCell}</td>
           <td>${regDate}</td>
           <td>
             <button class="btn-verify-reject" onclick="deleteUserAdmin('${u.id}')">Delete User</button>
@@ -1250,3 +1334,258 @@ function shakeElement(el) {
 }
 
 document.addEventListener('DOMContentLoaded', init);
+
+// ------------------------------------------------------------
+// LIVE LOCATION TRACKING SYSTEM (Production — user_locations table)
+// Uses LocationService module for GPS tracking
+// Uses LiveMap module for Admin dashboard
+// ------------------------------------------------------------
+
+/**
+ * Fetch user locations from user_locations table
+ * (used for admin users table "View Map" button)
+ */
+async function fetchUserLocations() {
+  if (!supabaseClient) return;
+
+  try {
+    const { data, error } = await supabaseClient
+      .from('user_locations')
+      .select('user_id, latitude, longitude, last_updated, online_status');
+
+    if (error) {
+      // Fallback: try old users table columns if user_locations doesn't exist yet
+      console.warn('user_locations table not found, trying legacy columns:', error.message);
+      const { data: legacyData } = await supabaseClient
+        .from('users')
+        .select('id, last_latitude, last_longitude, last_location_update');
+      if (legacyData) {
+        legacyData.forEach(u => {
+          if (u.last_latitude && u.last_longitude) {
+            state.locationCache[u.id] = {
+              lat: u.last_latitude,
+              lng: u.last_longitude,
+              timestamp: u.last_location_update
+            };
+          }
+        });
+      }
+      return;
+    }
+
+    if (data) {
+      data.forEach(loc => {
+        if (loc.latitude && loc.longitude) {
+          state.locationCache[loc.user_id] = {
+            lat: loc.latitude,
+            lng: loc.longitude,
+            timestamp: loc.last_updated,
+            online: loc.online_status
+          };
+        }
+      });
+      console.log(`📍 Loaded ${Object.keys(state.locationCache).length} user locations from user_locations table`);
+    }
+  } catch (err) {
+    console.error('Fetch locations error:', err);
+  }
+}
+
+function getTimeAgo(timestamp) {
+  const now = new Date();
+  const then = new Date(timestamp);
+  const diffMs = now - then;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHrs = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) return 'Just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHrs < 24) return `${diffHrs}h ago`;
+  return `${diffDays}d ago`;
+}
+
+let locationMapInstance = null;
+
+window.openLocationMap = function(userId, userName) {
+  const locData = state.locationCache[userId];
+  if (!locData || !locData.lat || !locData.lng) {
+    showToast('📍 Location not available for this user', 'info');
+    return;
+  }
+
+  const modal = document.getElementById('location-map-modal');
+  const titleEl = document.getElementById('map-modal-title');
+  const addressEl = document.getElementById('map-modal-address');
+  const googleLink = document.getElementById('map-google-link');
+  const directionsLink = document.getElementById('map-directions-link');
+
+  if (titleEl) titleEl.textContent = `📍 ${userName}'s Live Location`;
+  if (addressEl) addressEl.textContent = `Coordinates: ${locData.lat.toFixed(6)}, ${locData.lng.toFixed(6)}`;
+  if (googleLink) googleLink.href = `https://www.google.com/maps?q=${locData.lat},${locData.lng}`;
+  if (directionsLink) directionsLink.href = `https://www.google.com/maps/dir/?api=1&destination=${locData.lat},${locData.lng}`;
+
+  modal.classList.remove('hidden');
+
+  // Initialize or update map after modal is visible
+  setTimeout(() => {
+    const mapContainer = document.getElementById('location-map');
+    if (locationMapInstance) {
+      locationMapInstance.remove();
+      locationMapInstance = null;
+    }
+
+    locationMapInstance = L.map(mapContainer).setView([locData.lat, locData.lng], 15);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 19
+    }).addTo(locationMapInstance);
+
+    // Custom pulsing marker
+    const pulseIcon = L.divIcon({
+      className: 'location-pulse-marker',
+      html: `
+        <div style="position: relative; width: 24px; height: 24px;">
+          <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 14px; height: 14px; background: #3b82f6; border: 3px solid #fff; border-radius: 50%; box-shadow: 0 0 12px rgba(59,130,246,0.6); z-index: 2;"></div>
+          <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; background: rgba(59,130,246,0.2); border-radius: 50%; animation: locPulse 2s ease-out infinite;"></div>
+        </div>
+      `,
+      iconSize: [40, 40],
+      iconAnchor: [20, 20]
+    });
+
+    L.marker([locData.lat, locData.lng], { icon: pulseIcon })
+      .addTo(locationMapInstance)
+      .bindPopup(`<strong>${userName}</strong><br>📍 Last seen: ${locData.timestamp ? getTimeAgo(locData.timestamp) : 'Recently'}`)
+      .openPopup();
+
+    // Reverse geocode for address
+    fetch(`https://nominatim.openstreetmap.org/reverse?lat=${locData.lat}&lon=${locData.lng}&format=json`)
+      .then(r => r.json())
+      .then(data => {
+        if (data && data.display_name && addressEl) {
+          addressEl.textContent = `📍 ${data.display_name}`;
+        }
+      })
+      .catch(() => {});
+  }, 200);
+};
+
+window.closeLocationModal = function() {
+  const modal = document.getElementById('location-map-modal');
+  if (modal) modal.classList.add('hidden');
+  if (locationMapInstance) {
+    locationMapInstance.remove();
+    locationMapInstance = null;
+  }
+};
+
+window.refreshAllLocations = async function() {
+  showToast('🔄 Refreshing user locations...', 'info');
+  await fetchUserLocations();
+  renderAdminPanel();
+  showToast('📍 Locations refreshed!', 'success');
+};
+
+// ------------------------------------------------------------
+// ADMIN TAB SWITCHING (Overview ↔ Live Map)
+// ------------------------------------------------------------
+
+let _adminLiveMapInitialized = false;
+
+window.switchAdminTab = function(tab) {
+  const overviewTab = document.getElementById('admin-overview-tab');
+  const livemapTab = document.getElementById('admin-livemap-tab');
+  const overviewBtn = document.getElementById('admin-tab-overview');
+  const livemapBtn = document.getElementById('admin-tab-livemap');
+
+  if (tab === 'overview') {
+    if (overviewTab) overviewTab.classList.remove('hidden');
+    if (livemapTab) livemapTab.classList.add('hidden');
+
+    if (overviewBtn) {
+      overviewBtn.classList.add('admin-tab-btn--active');
+      overviewBtn.style.background = '';
+      overviewBtn.style.color = '';
+      overviewBtn.style.border = '';
+    }
+    if (livemapBtn) {
+      livemapBtn.classList.remove('admin-tab-btn--active');
+      livemapBtn.style.background = '';
+      livemapBtn.style.color = '';
+      livemapBtn.style.border = '';
+    }
+  } else if (tab === 'livemap') {
+    if (overviewTab) overviewTab.classList.add('hidden');
+    if (livemapTab) livemapTab.classList.remove('hidden');
+
+    if (livemapBtn) {
+      livemapBtn.classList.add('admin-tab-btn--active');
+      livemapBtn.style.background = '';
+      livemapBtn.style.color = '';
+      livemapBtn.style.border = '';
+    }
+    if (overviewBtn) {
+      overviewBtn.classList.remove('admin-tab-btn--active');
+      overviewBtn.style.background = '';
+      overviewBtn.style.color = '';
+      overviewBtn.style.border = '';
+    }
+
+    // Initialize LiveMap on first open
+    if (!_adminLiveMapInitialized && typeof LiveMap !== 'undefined' && supabaseClient) {
+      setTimeout(() => {
+        LiveMap.init({
+          supabase: supabaseClient,
+          containerId: 'admin-live-map',
+        });
+        _adminLiveMapInitialized = true;
+      }, 200);
+    } else if (_adminLiveMapInitialized && typeof LiveMap !== 'undefined') {
+      // Re-invalidate map size when tab becomes visible
+      LiveMap.invalidateSize();
+    }
+  }
+};
+
+window.toggleScannerLine = function() {
+  const beam = document.getElementById('livemap-scanner-beam');
+  const btn = document.getElementById('toggle-scanner-btn');
+  const text = document.getElementById('scanner-toggle-text');
+  
+  if (beam) {
+    if (beam.classList.contains('hidden')) {
+      beam.classList.remove('hidden');
+      if (btn) btn.classList.add('active');
+      if (text) text.textContent = 'Scanner Line: ON';
+      if (typeof showToast === 'function') showToast('⚡ Live Map Laser Scanner Line Enabled', 'info');
+    } else {
+      beam.classList.add('hidden');
+      if (btn) btn.classList.remove('active');
+      if (text) text.textContent = 'Scanner Line: OFF';
+      if (typeof showToast === 'function') showToast('⏸️ Laser Scanner Line Paused', 'info');
+    }
+  }
+};
+
+// Inject pulse animation CSS for location markers
+(function() {
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes locPulse {
+      0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(2.5); opacity: 0; }
+    }
+    .location-pulse-marker { background: none !important; border: none !important; }
+    #location-map .leaflet-popup-content-wrapper {
+      background: rgba(15, 23, 42, 0.95);
+      color: #e2e8f0;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      border-radius: 10px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    #location-map .leaflet-popup-tip { background: rgba(15, 23, 42, 0.95); }
+  `;
+  document.head.appendChild(style);
+})();
