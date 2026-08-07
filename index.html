@@ -1105,7 +1105,7 @@
               </div>
             </div>
 
-            <!-- Live Map Search & Filters -->
+            <!-- Live Map Controls (Search & Filters) -->
             <div class="livemap-controls">
               <div class="livemap-controls__search">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
@@ -1116,6 +1116,7 @@
                   <option value="all">All Roles</option>
                   <option value="customer">🏠 Customers</option>
                   <option value="worker">👷 Workers / Labour</option>
+                  <option value="admin">⚡ Admin</option>
                 </select>
                 <select id="livemap-status-filter">
                   <option value="all">All Status</option>
@@ -1123,53 +1124,17 @@
                   <option value="offline">🔴 Offline</option>
                 </select>
                 <button class="livemap-controls__refresh" onclick="LiveMap.refresh()">
-                  🔄 Refresh
+                  🔄 Refresh Map
                 </button>
               </div>
             </div>
 
-            <!-- The Futuristic Leaflet Map Container with Scanner Line Beam -->
+            <!-- Clean Enterprise Leaflet Map Container -->
             <div class="livemap-container" id="livemap-container-frame">
-              <!-- HUD Target Reticle Corner Highlights -->
-              <div class="hud-corner hud-corner--top-left"></div>
-              <div class="hud-corner hud-corner--top-right"></div>
-              <div class="hud-corner hud-corner--bottom-left"></div>
-              <div class="hud-corner hud-corner--bottom-right"></div>
-
-              <!-- HUD Target Reticle Crosshair & Pulse Grid Overlay -->
-              <div class="hud-radar-grid">
-                <div class="hud-radar-ring hud-radar-ring--1"></div>
-                <div class="hud-radar-ring hud-radar-ring--2"></div>
-                <div class="hud-radar-ring hud-radar-ring--3"></div>
-                <div class="hud-radar-crosshair-h"></div>
-                <div class="hud-radar-crosshair-v"></div>
-              </div>
-
-              <!-- HUD Top Overlay Bar -->
-              <div class="hud-overlay-bar">
-                <div class="hud-status">
-                  <span class="hud-pulse"></span>
-                  <span class="hud-title">LIVE SATELLITE RADAR</span>
-                  <span class="hud-badge">🇮🇳 INDIA BOUNDS LOCKED</span>
-                </div>
-                <div class="hud-scanner-toggle">
-                  <button type="button" class="hud-toggle-btn active" id="toggle-scanner-btn" onclick="toggleScannerLine()">
-                    <span class="hud-toggle-dot"></span>
-                    <span id="scanner-toggle-text">Scanner Line: ON</span>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Animated Top-to-Bottom Laser Scanner Beam -->
-              <div class="livemap-scanner" id="livemap-scanner-beam">
-                <div class="livemap-scanner__line"></div>
-                <div class="livemap-scanner__glow"></div>
-              </div>
-
               <div id="admin-live-map" class="livemap-map"></div>
             </div>
 
-            <!-- Map Legend -->
+            <!-- Professional Operations Map Legend -->
             <div class="livemap-legend">
               <div class="livemap-legend__item">
                 <span class="livemap-legend__dot livemap-legend__dot--blue"></span>
@@ -1180,11 +1145,12 @@
                 <span>Worker / Labour (Online)</span>
               </div>
               <div class="livemap-legend__item">
-                <span class="livemap-legend__dot livemap-legend__dot--gray"></span>
-                <span>Offline (No update for 2+ min)</span>
+                <span class="livemap-legend__dot livemap-legend__dot--purple"></span>
+                <span>Admin (Online)</span>
               </div>
-              <div class="livemap-legend__note" style="margin-left: auto; font-size: 0.78rem; color: #94a3b8;">
-                <span style="color: var(--amber);">⚡ Scanner Line:</span> Top-to-Bottom Live Geolocation Sweep
+              <div class="livemap-legend__item">
+                <span class="livemap-legend__dot livemap-legend__dot--gray"></span>
+                <span>Offline (Inactive 2m+)</span>
               </div>
             </div>
           </div> <!-- End admin-livemap-tab -->

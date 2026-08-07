@@ -1,19 +1,17 @@
 /**
  * ============================================================
- * SHRAMIK SETU — ADMIN LIVE MAP MODULE
- * Real-time GPS tracking dashboard with Leaflet + OpenStreetMap
+ * SHRAMIK SETU — PROFESSIONAL ADMIN LIVE MAP MODULE
+ * Enterprise-Grade Geolocation Operations Dashboard (Leaflet + OSM)
  * ============================================================
  * 
  * Features:
- * - Full-screen Leaflet map with dark CartoDB tiles
- * - Color-coded markers (Blue=Customer, Orange=Worker, Gray=Offline)
- * - Supabase Realtime subscription for instant updates
- * - Fallback polling every 15s if Realtime is slow
- * - Search by name, phone, user ID, role
- * - Filter by role (Customer/Worker) and status (Online/Offline)
- * - Smooth marker movement animation
- * - Professional popup styling
- * - Proper cleanup of subscriptions
+ * - Dark enterprise CartoDB tiles with high contrast labels
+ * - Distinct Markers: Customer (Blue), Worker (Orange), Admin (Purple), Offline (Gray)
+ * - Auto Zoom & Auto-Centering logic (Single user -> Center, Multiple -> Fit Bounds)
+ * - Realtime Supabase integration + fallback polling (15s)
+ * - Professional Popup Card with Profile Photo (if available), Name, Role, Phone, Status, Coordinates & Accuracy
+ * - Filtering by Role (Customer, Worker, Admin) and Status (Online, Offline)
+ * - Smooth marker movement animation (1s ease-out)
  */
 
 const LiveMap = (function () {
@@ -23,150 +21,114 @@ const LiveMap = (function () {
   let _map = null;
   let _supabase = null;
   let _markers = {};          // userId -> L.marker
-  let _locationData = {};     // userId -> location data
-  let _userData = {};         // userId -> user data (name, phone, role)
+  let _locationData = {};     // userId -> location data row
+  let _userData = {};         // userId -> user & profile metadata
   let _realtimeChannel = null;
   let _offlineCheckInterval = null;
   let _pollInterval = null;
   let _isInitialized = false;
+  let _hasAppliedInitialZoom = false;
+
   let _activeFilters = {
-    role: 'all',       // 'all' | 'customer' | 'worker'
+    role: 'all',       // 'all' | 'customer' | 'worker' | 'admin'
     status: 'all',     // 'all' | 'online' | 'offline'
     searchQuery: '',
   };
 
   // ── Configuration ──────────────────────────────────────────
   const OFFLINE_THRESHOLD_MS = 2 * 60 * 1000; // 2 minutes
-  const OFFLINE_CHECK_INTERVAL = 30000; // Check every 30 seconds
-  const POLL_INTERVAL = 15000; // Fallback poll every 15 seconds
-  const DEFAULT_CENTER = [22.5937, 78.9629]; // India center
-  const DEFAULT_ZOOM = 5;
-  const SMOOTH_MOVE_DURATION = 1000; // ms for smooth marker movement
+  const OFFLINE_CHECK_INTERVAL = 30000;       // Check every 30 seconds
+  const POLL_INTERVAL = 15000;                // Fallback poll every 15 seconds
+  const SMOOTH_MOVE_DURATION = 1000;          // Smooth move duration in ms
 
-  // ── Marker Icons ───────────────────────────────────────────
-  function _createMarkerIcon(role, isOnline) {
+  // Strict India Bounds for Map Lock
+  const INDIA_BOUNDS = L.latLngBounds(
+    [6.5, 68.0],
+    [35.5, 97.5]
+  );
+
+  // ── Role Color Helper ──────────────────────────────────────
+  function _getRoleDetails(role, isOnline) {
     if (!isOnline) {
-      // Gray offline marker
-      return L.divIcon({
-        className: 'live-map-marker live-map-marker--offline',
-        html: `
-          <div class="live-map-marker__dot live-map-marker__dot--gray">
-            <span class="live-map-marker__emoji">⚫</span>
-          </div>
-        `,
-        iconSize: [36, 36],
-        iconAnchor: [18, 18],
-        popupAnchor: [0, -20],
-      });
+      return {
+        key: 'offline',
+        label: 'OFFLINE',
+        color: '#64748b',
+        bg: 'rgba(100, 116, 139, 0.16)',
+        border: 'rgba(100, 116, 139, 0.35)',
+        badgeClass: 'popup-status--offline',
+      };
     }
 
-    if (role === 'customer') {
-      // Blue customer marker
-      return L.divIcon({
-        className: 'live-map-marker live-map-marker--customer',
-        html: `
-          <div class="live-map-marker__dot live-map-marker__dot--blue">
-            <span class="live-map-marker__emoji">🏠</span>
-          </div>
-          <div class="live-map-marker__pulse live-map-marker__pulse--blue"></div>
-        `,
-        iconSize: [40, 40],
-        iconAnchor: [20, 20],
-        popupAnchor: [0, -22],
-      });
+    const r = (role || '').toLowerCase();
+    if (r === 'admin') {
+      return {
+        key: 'admin',
+        label: 'ADMIN',
+        color: '#a855f7',
+        bg: 'rgba(168, 85, 247, 0.16)',
+        border: 'rgba(168, 85, 247, 0.35)',
+        badgeClass: 'popup-status--admin',
+      };
     }
+    if (r === 'worker' || r === 'labour') {
+      return {
+        key: 'worker',
+        label: 'WORKER',
+        color: '#f59e0b',
+        bg: 'rgba(245, 158, 11, 0.16)',
+        border: 'rgba(245, 158, 11, 0.35)',
+        badgeClass: 'popup-status--worker',
+      };
+    }
+    // Default: customer
+    return {
+      key: 'customer',
+      label: 'CUSTOMER',
+      color: '#3b82f6',
+      bg: 'rgba(59, 130, 246, 0.16)',
+      border: 'rgba(59, 130, 246, 0.35)',
+      badgeClass: 'popup-status--customer',
+    };
+  }
 
-    // Orange worker/labour marker
-    return L.divIcon({
-      className: 'live-map-marker live-map-marker--worker',
-      html: `
-        <div class="live-map-marker__dot live-map-marker__dot--orange">
-          <span class="live-map-marker__emoji">👷</span>
+  // ── Marker Icon Generator ──────────────────────────────────
+  function _createMarkerIcon(role, isOnline, userObj) {
+    const roleInfo = _getRoleDetails(role, isOnline);
+    const photo = userObj?.photo || '';
+    const name = userObj?.full_name || userObj?.name || 'User';
+    const initials = name.replace(/\(.*?\)/g, '').trim().split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() || 'U';
+
+    const iconSymbol = roleInfo.key === 'admin' ? '⚡'
+                     : roleInfo.key === 'worker' ? '👷'
+                     : roleInfo.key === 'customer' ? '🏠' : '⚫';
+
+    let avatarInner = photo
+      ? `<img src="${photo}" alt="${name}" class="map-marker-pin__img" />`
+      : `<span class="map-marker-pin__initials">${initials || iconSymbol}</span>`;
+
+    const pinHtml = `
+      <div class="map-marker-pin map-marker-pin--${roleInfo.key}">
+        <div class="map-marker-pin__avatar">
+          ${avatarInner}
         </div>
-        <div class="live-map-marker__pulse live-map-marker__pulse--orange"></div>
-      `,
-      iconSize: [40, 40],
-      iconAnchor: [20, 20],
-      popupAnchor: [0, -22],
+        ${isOnline ? `<div class="map-marker-pin__status-dot"></div>` : ''}
+      </div>
+    `;
+
+    return L.divIcon({
+      className: `map-marker-wrapper map-marker-wrapper--${roleInfo.key}`,
+      html: pinHtml,
+      iconSize: [42, 42],
+      iconAnchor: [21, 21],
+      popupAnchor: [0, -24],
     });
   }
 
-  // ── Build Popup Content ────────────────────────────────────
-  function _buildPopupContent(userId) {
-    const loc = _locationData[userId];
-    const user = _userData[userId];
-    if (!loc) return '';
-
-    const name = user?.full_name || user?.name || 'Unknown User';
-    const phone = user?.phone || 'N/A';
-    const email = user?.email || 'N/A';
-    const role = (loc.role || user?.role || 'unknown').toUpperCase();
-    const isOnline = _isUserOnline(loc);
-    const statusText = isOnline ? '🟢 Online' : '🔴 Offline';
-    const statusClass = isOnline ? 'popup-status--online' : 'popup-status--offline';
-    const lastUpdated = loc.last_updated
-      ? new Date(loc.last_updated).toLocaleString('en-IN', { 
-          dateStyle: 'short', 
-          timeStyle: 'medium' 
-        })
-      : 'Unknown';
-    const accuracy = loc.accuracy ? `${loc.accuracy.toFixed(1)}m` : 'N/A';
-    const speed = loc.speed ? `${(loc.speed * 3.6).toFixed(1)} km/h` : 'Stationary';
-    const heading = loc.heading ? `${loc.heading.toFixed(0)}°` : 'N/A';
-
-    return `
-      <div class="live-map-popup">
-        <div class="live-map-popup__header">
-          <strong class="live-map-popup__name">${name}</strong>
-          <span class="live-map-popup__status ${statusClass}">${statusText}</span>
-        </div>
-        <div class="live-map-popup__grid">
-          <div class="live-map-popup__row">
-            <span class="live-map-popup__label">📱 Phone</span>
-            <span class="live-map-popup__value">${phone}</span>
-          </div>
-          <div class="live-map-popup__row">
-            <span class="live-map-popup__label">✉️ Email</span>
-            <span class="live-map-popup__value">${email}</span>
-          </div>
-          <div class="live-map-popup__row">
-            <span class="live-map-popup__label">🏷️ Role</span>
-            <span class="live-map-popup__value live-map-popup__role">${role}</span>
-          </div>
-          <div class="live-map-popup__row">
-            <span class="live-map-popup__label">📍 Lat / Lng</span>
-            <span class="live-map-popup__value">${loc.latitude.toFixed(6)}, ${loc.longitude.toFixed(6)}</span>
-          </div>
-          <div class="live-map-popup__row">
-            <span class="live-map-popup__label">🎯 Accuracy</span>
-            <span class="live-map-popup__value">${accuracy}</span>
-          </div>
-          <div class="live-map-popup__row">
-            <span class="live-map-popup__label">🏃 Speed</span>
-            <span class="live-map-popup__value">${speed}</span>
-          </div>
-          <div class="live-map-popup__row">
-            <span class="live-map-popup__label">🕐 Updated</span>
-            <span class="live-map-popup__value">${lastUpdated}</span>
-          </div>
-        </div>
-        <div class="live-map-popup__actions">
-          <a href="https://www.google.com/maps?q=${loc.latitude},${loc.longitude}" 
-             target="_blank" class="live-map-popup__btn live-map-popup__btn--maps">
-            🗺️ Google Maps
-          </a>
-          <a href="https://www.google.com/maps/dir/?api=1&destination=${loc.latitude},${loc.longitude}" 
-             target="_blank" class="live-map-popup__btn live-map-popup__btn--directions">
-            🧭 Directions
-          </a>
-        </div>
-      </div>
-    `;
-  }
-
-  // ── Check if User is Online ────────────────────────────────
+  // ── Check if Location Record is Active/Online ──────────────
   function _isUserOnline(locationData) {
-    if (!locationData.online_status) return false;
+    if (!locationData) return false;
+    if (locationData.online_status === false) return false;
     if (!locationData.last_updated) return false;
 
     const lastUpdate = new Date(locationData.last_updated).getTime();
@@ -174,85 +136,177 @@ const LiveMap = (function () {
     return (now - lastUpdate) < OFFLINE_THRESHOLD_MS;
   }
 
-  // ── Should Show Marker (Filter Check) ──────────────────────
-  function _shouldShowMarker(userId) {
+  // ── Popup Content Renderer ─────────────────────────────────
+  function _buildPopupContent(userId) {
     const loc = _locationData[userId];
-    const user = _userData[userId];
-    if (!loc) return false;
+    const user = _userData[userId] || {};
+    if (!loc) return '';
+
+    const name = user.full_name || user.name || 'Anonymous User';
+    const phone = user.phone || 'N/A';
+    const email = user.email || 'N/A';
+    const photo = user.photo || '';
+    const initials = name.replace(/\(.*?\)/g, '').trim().split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() || 'U';
 
     const isOnline = _isUserOnline(loc);
-    const role = (loc.role || user?.role || '').toLowerCase();
-    const name = (user?.full_name || user?.name || '').toLowerCase();
-    const phone = (user?.phone || '').toLowerCase();
+    const roleInfo = _getRoleDetails(loc.role || user.role, isOnline);
+    const statusLabel = isOnline ? '🟢 Online' : '🔴 Inactive (2m+)';
+
+    const lastUpdatedFormatted = loc.last_updated
+      ? new Date(loc.last_updated).toLocaleString('en-IN', {
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+        })
+      : 'Unknown';
+
+    const accuracyText = (loc.accuracy !== undefined && loc.accuracy !== null)
+      ? `${Math.round(loc.accuracy)} meters`
+      : 'GPS Standard';
+
+    const avatarHtml = photo
+      ? `<img src="${photo}" alt="${name}" class="live-map-popup__avatar-img" />`
+      : `<div class="live-map-popup__avatar-fallback">${initials}</div>`;
+
+    return `
+      <div class="live-map-popup">
+        <div class="live-map-popup__header">
+          <div class="live-map-popup__avatar">
+            ${avatarHtml}
+          </div>
+          <div class="live-map-popup__meta">
+            <h4 class="live-map-popup__name">${name}</h4>
+            <div class="live-map-popup__badges">
+              <span class="live-map-popup__role-badge live-map-popup__role-badge--${roleInfo.key}">
+                ${roleInfo.label}
+              </span>
+              <span class="live-map-popup__status-badge ${isOnline ? 'online' : 'offline'}">
+                ${statusLabel}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="live-map-popup__body">
+          <div class="live-map-popup__info-row">
+            <span class="live-map-popup__info-label">📞 Phone</span>
+            <span class="live-map-popup__info-value">${phone}</span>
+          </div>
+          <div class="live-map-popup__info-row">
+            <span class="live-map-popup__info-label">✉️ Email</span>
+            <span class="live-map-popup__info-value">${email}</span>
+          </div>
+          <div class="live-map-popup__info-row">
+            <span class="live-map-popup__info-label">📍 Coordinates</span>
+            <span class="live-map-popup__info-value live-map-popup__info-value--mono">
+              ${loc.latitude.toFixed(6)}, ${loc.longitude.toFixed(6)}
+            </span>
+          </div>
+          <div class="live-map-popup__info-row">
+            <span class="live-map-popup__info-label">🎯 Accuracy</span>
+            <span class="live-map-popup__info-value">${accuracyText}</span>
+          </div>
+          <div class="live-map-popup__info-row">
+            <span class="live-map-popup__info-label">🕐 Last Updated</span>
+            <span class="live-map-popup__info-value">${lastUpdatedFormatted}</span>
+          </div>
+        </div>
+
+        <div class="live-map-popup__footer">
+          <a href="https://www.google.com/maps?q=${loc.latitude},${loc.longitude}" 
+             target="_blank" rel="noopener noreferrer" class="live-map-popup__action-btn live-map-popup__action-btn--maps">
+            🗺️ Google Maps
+          </a>
+          <a href="https://www.google.com/maps/dir/?api=1&destination=${loc.latitude},${loc.longitude}" 
+             target="_blank" rel="noopener noreferrer" class="live-map-popup__action-btn live-map-popup__action-btn--dir">
+            🧭 Directions
+          </a>
+        </div>
+      </div>
+    `;
+  }
+
+  // ── Filter Check ───────────────────────────────────────────
+  function _shouldShowMarker(userId) {
+    const loc = _locationData[userId];
+    const user = _userData[userId] || {};
+    if (!loc || !loc.latitude || !loc.longitude) return false;
+
+    const isOnline = _isUserOnline(loc);
+    const role = (loc.role || user.role || '').toLowerCase();
+    const name = (user.full_name || user.name || '').toLowerCase();
+    const phone = (user.phone || '').toLowerCase();
 
     // Role filter
     if (_activeFilters.role !== 'all') {
-      const filterRole = _activeFilters.role;
+      const filterRole = _activeFilters.role.toLowerCase();
       if (filterRole === 'worker' && role !== 'worker' && role !== 'labour') return false;
       if (filterRole === 'customer' && role !== 'customer') return false;
+      if (filterRole === 'admin' && role !== 'admin') return false;
     }
 
     // Status filter
     if (_activeFilters.status === 'online' && !isOnline) return false;
     if (_activeFilters.status === 'offline' && isOnline) return false;
 
-    // Search filter
+    // Search query filter
     if (_activeFilters.searchQuery) {
       const q = _activeFilters.searchQuery.toLowerCase();
-      const matchesName = name.includes(q);
-      const matchesPhone = phone.includes(q);
-      const matchesId = userId.toLowerCase().includes(q);
-      const matchesRole = role.includes(q);
-      const matchesStatus = (isOnline ? 'online' : 'offline').includes(q);
-      if (!matchesName && !matchesPhone && !matchesId && !matchesRole && !matchesStatus) {
-        return false;
-      }
+      const matchName = name.includes(q);
+      const matchPhone = phone.includes(q);
+      const matchId = userId.toLowerCase().includes(q);
+      const matchRole = role.includes(q);
+      if (!matchName && !matchPhone && !matchId && !matchRole) return false;
     }
 
     return true;
   }
 
-  // ── Smooth marker movement ─────────────────────────────────
-  function _smoothMoveMarker(marker, newLatLng, duration) {
+  // ── Smooth Position Animation ──────────────────────────────
+  function _smoothMoveMarker(marker, targetLatLng, duration) {
     if (!marker || !marker.getLatLng) return;
-    
-    const startLatLng = marker.getLatLng();
-    const startTime = performance.now();
 
-    // If same position, just update icon
-    if (startLatLng.lat === newLatLng[0] && startLatLng.lng === newLatLng[1]) return;
+    const start = marker.getLatLng();
+    const targetLat = targetLatLng[0];
+    const targetLng = targetLatLng[1];
+
+    if (start.lat === targetLat && start.lng === targetLng) return;
+
+    const startTime = performance.now();
 
     function animate(currentTime) {
       const elapsed = currentTime - startTime;
-      const t = Math.min(elapsed / duration, 1);
+      const progress = Math.min(elapsed / duration, 1);
       
-      // Ease-out cubic
-      const ease = 1 - Math.pow(1 - t, 3);
-      
-      const lat = startLatLng.lat + (newLatLng[0] - startLatLng.lat) * ease;
-      const lng = startLatLng.lng + (newLatLng[1] - startLatLng.lng) * ease;
-      
-      marker.setLatLng([lat, lng]);
-      
-      if (t < 1) {
+      // Cubic ease-out curve
+      const ease = 1 - Math.pow(1 - progress, 3);
+
+      const currentLat = start.lat + (targetLat - start.lat) * ease;
+      const currentLng = start.lng + (targetLng - start.lng) * ease;
+
+      marker.setLatLng([currentLat, currentLng]);
+
+      if (progress < 1) {
         requestAnimationFrame(animate);
       }
     }
-    
+
     requestAnimationFrame(animate);
   }
 
-  // ── Add or Update a Marker ─────────────────────────────────
+  // ── Add or Update Marker ───────────────────────────────────
   function _addOrUpdateMarker(userId) {
     const loc = _locationData[userId];
     if (!loc || !loc.latitude || !loc.longitude) return;
 
-    const user = _userData[userId];
+    const user = _userData[userId] || {};
     const isOnline = _isUserOnline(loc);
-    const role = (loc.role || user?.role || 'customer').toLowerCase();
+    const role = loc.role || user.role || 'customer';
     const shouldShow = _shouldShowMarker(userId);
 
-    // Remove existing marker if not filtered in
+    // Filter out marker if hidden
     if (!shouldShow) {
       if (_markers[userId]) {
         _map.removeLayer(_markers[userId]);
@@ -261,37 +315,61 @@ const LiveMap = (function () {
       return;
     }
 
-    const icon = _createMarkerIcon(role, isOnline);
+    const icon = _createMarkerIcon(role, isOnline, user);
     const popupContent = _buildPopupContent(userId);
 
     if (_markers[userId]) {
-      // Smooth-move existing marker
+      // Update existing marker smoothly without recreating DOM node
       _smoothMoveMarker(_markers[userId], [loc.latitude, loc.longitude], SMOOTH_MOVE_DURATION);
       _markers[userId].setIcon(icon);
       _markers[userId].setPopupContent(popupContent);
     } else {
-      // Create new marker
+      // Create new marker instance
       const marker = L.marker([loc.latitude, loc.longitude], { icon })
         .addTo(_map)
         .bindPopup(popupContent, {
-          maxWidth: 340,
+          maxWidth: 320,
           className: 'live-map-popup-wrapper',
         });
 
       _markers[userId] = marker;
-      console.log(`[LiveMap] 📍 New marker created for ${user?.full_name || userId} at [${loc.latitude.toFixed(4)}, ${loc.longitude.toFixed(4)}]`);
     }
   }
 
-  // ── Refresh All Markers ────────────────────────────────────
-  function _refreshAllMarkers() {
+  // ── Auto Zoom & Fit Bounds ─────────────────────────────────
+  function _applyAutoZoom() {
+    if (!_map) return;
+
+    const activeMarkers = Object.values(_markers);
+    if (activeMarkers.length === 0) {
+      _map.fitBounds(INDIA_BOUNDS);
+      return;
+    }
+
+    if (activeMarkers.length === 1) {
+      // Single online user -> smoothly fly to and center on that user
+      const latLng = activeMarkers[0].getLatLng();
+      _map.flyTo(latLng, 14, { animate: true, duration: 1.2 });
+    } else {
+      // Multiple users -> fit all markers in bounds with padding
+      const group = L.featureGroup(activeMarkers);
+      _map.fitBounds(group.getBounds().pad(0.18), { animate: true, duration: 1.2 });
+    }
+  }
+
+  // ── Refresh All Markers & Stats ────────────────────────────
+  function _refreshAllMarkers(shouldAutoZoom = false) {
     Object.keys(_locationData).forEach(userId => {
       _addOrUpdateMarker(userId);
     });
     _updateStatsUI();
+
+    if (shouldAutoZoom) {
+      _applyAutoZoom();
+    }
   }
 
-  // ── Update Stats UI ────────────────────────────────────────
+  // ── Update Operational Stats Bar ───────────────────────────
   function _updateStatsUI() {
     const totalTracked = Object.keys(_locationData).length;
     let onlineCount = 0;
@@ -324,12 +402,12 @@ const LiveMap = (function () {
     if (els.workers) els.workers.textContent = workerCount;
   }
 
-  // ── Fetch Initial Data ─────────────────────────────────────
+  // ── Fetch Initial Locations & User Metadata ───────────────
   async function _fetchInitialData() {
     if (!_supabase) return;
 
     try {
-      // Fetch all locations
+      // Fetch location tracking table
       const { data: locations, error: locError } = await _supabase
         .from('user_locations')
         .select('*');
@@ -339,50 +417,65 @@ const LiveMap = (function () {
         return;
       }
 
-      // Fetch all users for name/phone data
+      // Fetch user accounts
       const { data: users, error: usrError } = await _supabase
         .from('users')
         .select('id, full_name, phone, role, email');
 
       if (usrError) {
-        console.error('[LiveMap] ❌ Fetch users error:', usrError.message);
+        console.warn('[LiveMap] ⚠️ Fetch users warning:', usrError.message);
       }
 
-      // Index user data
+      // Fetch worker profiles for avatar photos
+      const { data: profiles, error: profError } = await _supabase
+        .from('worker_profiles')
+        .select('user_id, photo');
+
+      if (profError) {
+        console.warn('[LiveMap] ⚠️ Fetch profiles warning:', profError.message);
+      }
+
+      // Index user records
+      _userData = {};
       if (users) {
         users.forEach(u => {
-          _userData[u.id] = u;
+          _userData[u.id] = { ...u };
         });
       }
 
-      // Index location data and create markers
+      // Merge profile photos
+      if (profiles) {
+        profiles.forEach(p => {
+          if (_userData[p.user_id]) {
+            _userData[p.user_id].photo = p.photo;
+          } else {
+            _userData[p.user_id] = { photo: p.photo };
+          }
+        });
+      }
+
+      // Index locations
+      _locationData = {};
       if (locations) {
         locations.forEach(loc => {
           _locationData[loc.user_id] = loc;
         });
       }
 
-      // Render all markers
-      _refreshAllMarkers();
+      // Render markers & apply auto-zoom
+      _refreshAllMarkers(true);
+      _hasAppliedInitialZoom = true;
 
-      // Fit map bounds to markers if any exist
-      const validMarkers = Object.values(_markers);
-      if (validMarkers.length > 0) {
-        const group = L.featureGroup(validMarkers);
-        _map.fitBounds(group.getBounds().pad(0.2));
-      }
-
-      console.log(`[LiveMap] ✅ Loaded ${locations?.length || 0} locations, ${users?.length || 0} users`);
+      console.log(`[LiveMap] ✅ Data loaded: ${locations?.length || 0} locations, ${users?.length || 0} users`);
     } catch (err) {
       console.error('[LiveMap] ❌ Fetch error:', err);
     }
   }
 
-  // ── Subscribe to Realtime Updates ──────────────────────────
+  // ── Supabase Realtime Subscription ─────────────────────────
   function _subscribeRealtime() {
     if (!_supabase) return;
 
-    // Unsubscribe existing channel
     if (_realtimeChannel) {
       _supabase.removeChannel(_realtimeChannel);
       _realtimeChannel = null;
@@ -393,18 +486,24 @@ const LiveMap = (function () {
       .on(
         'postgres_changes',
         {
-          event: '*', // Listen for INSERT, UPDATE, DELETE
+          event: '*',
           schema: 'public',
           table: 'user_locations',
         },
         (payload) => {
-          console.log('[LiveMap] 🔔 Realtime event:', payload.eventType);
+          console.log('[LiveMap] 📡 Realtime change:', payload.eventType);
 
           if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
             const loc = payload.new;
+            const isNewUser = !_locationData[loc.user_id];
             _locationData[loc.user_id] = loc;
             _addOrUpdateMarker(loc.user_id);
             _updateStatsUI();
+
+            // Auto-zoom if new user appeared and initial zoom is ready
+            if (isNewUser && _hasAppliedInitialZoom) {
+              _applyAutoZoom();
+            }
           } else if (payload.eventType === 'DELETE') {
             const userId = payload.old?.user_id;
             if (userId) {
@@ -419,17 +518,11 @@ const LiveMap = (function () {
         }
       )
       .subscribe((status) => {
-        console.log('[LiveMap] 📡 Realtime subscription status:', status);
-        if (status === 'SUBSCRIBED') {
-          console.log('[LiveMap] ✅ Realtime is ACTIVE — live updates enabled');
-        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          console.warn('[LiveMap] ⚠️ Realtime subscription error, relying on polling fallback');
-        }
+        console.log('[LiveMap] 📡 Realtime channel status:', status);
       });
   }
 
-  // ── Fallback Polling ───────────────────────────────────────
-  // Polls the database periodically in case Realtime subscription fails
+  // ── Fallback Polling Loop ───────────────────────────────────
   function _startPolling() {
     if (_pollInterval) clearInterval(_pollInterval);
 
@@ -437,50 +530,43 @@ const LiveMap = (function () {
       if (!_supabase || !_isInitialized) return;
 
       try {
-        const { data: locations, error } = await _supabase
+        const { data: locations } = await _supabase
           .from('user_locations')
           .select('*');
 
-        if (error) {
-          console.warn('[LiveMap] Poll error:', error.message);
-          return;
-        }
-
         if (locations) {
-          let changed = false;
+          let updated = false;
           locations.forEach(loc => {
             const existing = _locationData[loc.user_id];
             if (!existing || existing.last_updated !== loc.last_updated) {
               _locationData[loc.user_id] = loc;
               _addOrUpdateMarker(loc.user_id);
-              changed = true;
+              updated = true;
             }
           });
-          if (changed) {
+          if (updated) {
             _updateStatsUI();
           }
         }
-      } catch (err) {
-        console.warn('[LiveMap] Poll exception:', err);
+      } catch (e) {
+        // silent fallback
       }
     }, POLL_INTERVAL);
   }
 
-  // ── Periodic Offline Check ─────────────────────────────────
-  // Checks all users and updates markers for those who went offline
+  // ── Offline Checker Interval ───────────────────────────────
   function _startOfflineCheck() {
     if (_offlineCheckInterval) clearInterval(_offlineCheckInterval);
 
     _offlineCheckInterval = setInterval(() => {
       Object.keys(_locationData).forEach(userId => {
-        // Re-render marker (will update icon to gray if offline)
         _addOrUpdateMarker(userId);
       });
       _updateStatsUI();
     }, OFFLINE_CHECK_INTERVAL);
   }
 
-  // ── Initialize Event Listeners for Search/Filters ──────────
+  // ── UI Filter & Search Listeners ───────────────────────────
   function _setupFilterListeners() {
     const searchInput = document.getElementById('livemap-search');
     const roleFilter = document.getElementById('livemap-role-filter');
@@ -489,58 +575,42 @@ const LiveMap = (function () {
     if (searchInput) {
       searchInput.addEventListener('input', (e) => {
         _activeFilters.searchQuery = e.target.value.trim();
-        _refreshAllMarkers();
+        _refreshAllMarkers(false);
       });
     }
 
     if (roleFilter) {
       roleFilter.addEventListener('change', (e) => {
         _activeFilters.role = e.target.value;
-        _refreshAllMarkers();
+        _refreshAllMarkers(true);
       });
     }
 
     if (statusFilter) {
       statusFilter.addEventListener('change', (e) => {
         _activeFilters.status = e.target.value;
-        _refreshAllMarkers();
+        _refreshAllMarkers(true);
       });
     }
   }
 
-  // ── Public API ─────────────────────────────────────────────
+  // ── Public Interface ───────────────────────────────────────
 
-  /**
-   * Initialize the live map
-   * @param {Object} options
-   * @param {Object} options.supabase - Supabase client instance
-   * @param {string} options.containerId - DOM element ID for the map
-   */
   async function init(options) {
     if (_isInitialized) {
-      console.warn('[LiveMap] Already initialized, destroying first...');
       destroy();
     }
 
     _supabase = options.supabase;
     const containerId = options.containerId || 'admin-live-map';
 
-    // Wait for container to be visible
     const container = document.getElementById(containerId);
     if (!container) {
-      console.error('[LiveMap] ❌ Map container not found:', containerId);
+      console.error('[LiveMap] ❌ Map container missing:', containerId);
       return;
     }
 
-    console.log('[LiveMap] 🗺️ Initializing map in container:', containerId);
-
-    // Define strict India LatLng bounds
-    const INDIA_BOUNDS = L.latLngBounds(
-      [6.5, 68.0],
-      [35.5, 97.5]
-    );
-
-    // Initialize Leaflet map locked to India
+    // Initialize Leaflet Map with Enterprise Dark Carto Tiles
     _map = L.map(containerId, {
       center: [22.5937, 78.9629],
       zoom: 5,
@@ -552,49 +622,35 @@ const LiveMap = (function () {
       attributionControl: true,
     });
 
-    // Add custom zoom control to top-right
+    // Custom Zoom Controls top-right
     L.control.zoom({ position: 'topright' }).addTo(_map);
 
-    // Fit view to India by default
+    // Initial View fit India
     _map.fitBounds(INDIA_BOUNDS);
 
-    // Add dark CartoDB tile layer
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
+    // Clean Dark CartoDB basemap with high readability labels
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
       maxZoom: 19,
       subdomains: 'abcd',
     }).addTo(_map);
 
-    // Setup filter listeners
     _setupFilterListeners();
-
-    // Fetch initial data
     await _fetchInitialData();
-
-    // Subscribe to realtime updates
     _subscribeRealtime();
-
-    // Start fallback polling
     _startPolling();
-
-    // Start offline checking
     _startOfflineCheck();
 
     _isInitialized = true;
-    console.log('[LiveMap] ✅ Live map initialized successfully');
+    console.log('[LiveMap] 🗺️ Professional Live Map Ready');
   }
 
-  /**
-   * Destroy the map and clean up all resources
-   */
   function destroy() {
-    // Unsubscribe realtime
     if (_realtimeChannel && _supabase) {
       _supabase.removeChannel(_realtimeChannel);
       _realtimeChannel = null;
     }
 
-    // Stop intervals
     if (_offlineCheckInterval) {
       clearInterval(_offlineCheckInterval);
       _offlineCheckInterval = null;
@@ -604,47 +660,27 @@ const LiveMap = (function () {
       _pollInterval = null;
     }
 
-    // Remove all markers
     Object.values(_markers).forEach(marker => {
       if (_map) _map.removeLayer(marker);
     });
     _markers = {};
 
-    // Destroy map
     if (_map) {
       _map.remove();
       _map = null;
     }
 
-    // Reset state
     _locationData = {};
     _userData = {};
-    _activeFilters = { role: 'all', status: 'all', searchQuery: '' };
     _isInitialized = false;
-
-    console.log('[LiveMap] 🗑️ Destroyed and cleaned up');
+    _hasAppliedInitialZoom = false;
   }
 
-  /**
-   * Force refresh all data from database
-   */
   async function refresh() {
     if (!_isInitialized) return;
-
-    // Clear existing markers
-    Object.values(_markers).forEach(marker => {
-      if (_map) _map.removeLayer(marker);
-    });
-    _markers = {};
-    _locationData = {};
-
     await _fetchInitialData();
-    console.log('[LiveMap] 🔄 Data refreshed');
   }
 
-  /**
-   * Invalidate map size (call when container becomes visible)
-   */
   function invalidateSize() {
     if (_map) {
       setTimeout(() => _map.invalidateSize(), 150);
