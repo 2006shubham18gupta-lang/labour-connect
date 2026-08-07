@@ -3952,3 +3952,299 @@ input:focus, textarea:focus, select:focus {
     grid-template-columns: 1fr;
   }
 }
+
+/* ============================================================
+   LIVE LOCATION SYSTEM — PREMIUM UI ENHANCEMENTS
+   Additive improvements only — does NOT override existing styles
+   ============================================================ */
+
+/* ── Enhanced Marker Glow & Soft Shadow ────────────────────── */
+.live-map-marker__dot--blue {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5), 0 0 20px rgba(59, 130, 246, 0.4);
+}
+
+.live-map-marker__dot--orange {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5), 0 0 20px rgba(245, 158, 11, 0.4);
+}
+
+.live-map-marker__dot--gray {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5), 0 0 10px rgba(100, 116, 139, 0.25);
+  opacity: 0.75;
+}
+
+/* ── Marker Entry Animation ────────────────────────────────── */
+.live-map-marker--customer,
+.live-map-marker--worker {
+  animation: markerAppear 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.live-map-marker--offline {
+  animation: markerAppear 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes markerAppear {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* ── Enhanced Popup Styling ────────────────────────────────── */
+.live-map-popup-wrapper .leaflet-popup-content-wrapper {
+  border-radius: 16px;
+  box-shadow:
+    0 20px 48px rgba(0, 0, 0, 0.65),
+    0 0 30px rgba(59, 130, 246, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.live-map-popup__header {
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.live-map-popup__name {
+  font-size: 1.08rem;
+  letter-spacing: -0.01em;
+}
+
+.live-map-popup__row {
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.live-map-popup__row:last-child {
+  border-bottom: none;
+}
+
+.live-map-popup__label {
+  font-size: 0.76rem;
+  letter-spacing: 0.01em;
+}
+
+.live-map-popup__value {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.live-map-popup__actions {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.live-map-popup__btn {
+  border-radius: 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 10px 14px;
+  letter-spacing: 0.01em;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+
+.live-map-popup__btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+/* ── Enhanced Search Bar ───────────────────────────────────── */
+.livemap-controls__search {
+  border-radius: 16px;
+  height: 48px;
+}
+
+.livemap-controls__search input {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* ── Enhanced Dropdowns ────────────────────────────────────── */
+.livemap-controls__filters select {
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 0.85rem;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+}
+
+/* ── Enhanced Refresh Button ───────────────────────────────── */
+.livemap-controls__refresh {
+  border-radius: 12px;
+  font-size: 0.85rem;
+  padding: 12px 20px;
+  letter-spacing: 0.01em;
+}
+
+.livemap-controls__refresh:hover {
+  transform: translateY(-2px) scale(1.02);
+}
+
+.livemap-controls__refresh:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* ── Map Container Glow ────────────────────────────────────── */
+.livemap-container {
+  border-radius: 20px;
+  border: 1.5px solid rgba(245, 158, 11, 0.25);
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.6),
+    0 0 40px rgba(245, 158, 11, 0.1),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+/* ── Enhanced Legend ───────────────────────────────────────── */
+.livemap-legend {
+  border-radius: 14px;
+  padding: 14px 24px;
+  gap: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.livemap-legend__item {
+  gap: 8px;
+  font-size: 0.83rem;
+  font-weight: 600;
+  color: #b0bec5;
+}
+
+.livemap-legend__dot {
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+}
+
+/* ── Enhanced Zoom Controls ────────────────────────────────── */
+.livemap-container .leaflet-control-zoom {
+  margin-top: 14px !important;
+  margin-right: 14px !important;
+  border-radius: 12px !important;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+}
+
+.livemap-container .leaflet-control-zoom-in,
+.livemap-container .leaflet-control-zoom-out {
+  background: rgba(10, 18, 35, 0.92) !important;
+  color: #e2e8f0 !important;
+  width: 36px !important;
+  height: 36px !important;
+  line-height: 36px !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+  transition: all 0.2s ease !important;
+}
+
+.livemap-container .leaflet-control-zoom-in:hover,
+.livemap-container .leaflet-control-zoom-out:hover {
+  background: rgba(245, 158, 11, 0.9) !important;
+  color: #0f172a !important;
+}
+
+/* ── Stats Bar Polish ──────────────────────────────────────── */
+.livemap-stats-bar {
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.livemap-stats-bar__icon {
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* ── HUD Overlay Polish ────────────────────────────────────── */
+.hud-overlay-bar {
+  backdrop-filter: blur(16px);
+}
+
+/* ── Smooth marker transition for position updates ─────────── */
+.leaflet-marker-icon {
+  transition: opacity 0.3s ease;
+}
+
+/* ── Location Permission Banner Polish ─────────────────────── */
+.location-permission-banner {
+  animation: slideDownBanner 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes slideDownBanner {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.location-permission-banner--hiding {
+  animation: slideUpBanner 0.3s ease forwards;
+}
+
+@keyframes slideUpBanner {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
+/* ── Admin Tab Buttons Polish ──────────────────────────────── */
+.admin-tab-btn {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.admin-tab-btn:hover {
+  transform: translateY(-1px);
+}
+
+.admin-tab-btn--active {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* ── Responsive: Live Map Tablet Enhancement ───────────────── */
+@media (max-width: 1024px) {
+  .livemap-container {
+    border-radius: 16px;
+  }
+}
+
+/* ── Responsive: Live Map Mobile Enhancement ───────────────── */
+@media (max-width: 768px) {
+  .livemap-container {
+    border-radius: 14px;
+    border-width: 1px;
+  }
+
+  .livemap-legend {
+    padding: 12px 16px;
+    gap: 14px;
+    border-radius: 12px;
+  }
+
+  .livemap-controls__search {
+    border-radius: 12px;
+    height: 44px;
+  }
+
+  .livemap-controls__refresh {
+    border-radius: 10px;
+    padding: 10px 16px;
+  }
+}

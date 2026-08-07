@@ -24,14 +24,17 @@ const LocationService = (function () {
     GEOLOCATION_OPTIONS: {
       enableHighAccuracy: true,
       maximumAge: 0,
-      timeout: 10000,
+      timeout: 15000,
     },
+    MAX_RETRY_ATTEMPTS: 3,
+    RETRY_DELAY_MS: 2000,
   };
 
   // ── Internal State ─────────────────────────────────────────
   let _watchId = null;
   let _userId = null;
   let _userRole = null;
+  let _userName = null;
   let _supabase = null;
   let _lastSentLocation = null;
   let _lastSentTime = 0;
@@ -43,6 +46,8 @@ const LocationService = (function () {
   let _onPermissionGranted = null;
   let _onLocationUpdate = null;
   let _onError = null;
+  let _firstUpdateSent = false;
+  let _retryCount = 0;
 
   // ── Haversine Distance (meters) ────────────────────────────
   function _haversineDistance(lat1, lon1, lat2, lon2) {
@@ -72,23 +77,37 @@ const LocationService = (function () {
     return distance >= CONFIG.MIN_DISTANCE_METERS;
   }
 
-  // ── Upsert Location to Supabase ────────────────────────────
-  // Uses ON CONFLICT (user_id) DO UPDATE to ensure single row per user
-  async function _upsertLocation(position) {
-    if (!_supabase || !_userId) return;
+  // ── Ensure user_locations row exists (upsert) ──────────────
+  async function _upsertLocation(position, forceUpdate) {
+    if (!_supabase || !_userId) {
+      console.warn('[LocationService] Cannot upsert: missing supabase or userId');
+      return;
+    }
+
+    if (!position || !position.coords) {
+      console.warn('[LocationService] Cannot upsert: invalid position object');
+      return;
+    }
 
     const now = Date.now();
     const locationChanged = _hasLocationChanged(position);
     const timeElapsed = now - _lastSentTime >= CONFIG.UPDATE_INTERVAL_MS;
 
-    // Only send if location changed OR time threshold passed
-    if (!locationChanged && !timeElapsed) return;
+    // On first update, always send regardless of throttle
+    if (!forceUpdate && _firstUpdateSent && !locationChanged && !timeElapsed) {
+      return;
+    }
+
+    const lat = position.coords.latitude;
+    const lng = position.coords.longitude;
+
+    console.log(`[LocationService] 📤 Preparing upsert: userId=${_userId}, lat=${lat.toFixed(6)}, lng=${lng.toFixed(6)}, role=${_userRole}`);
 
     const payload = {
       user_id: _userId,
       role: _userRole || 'customer',
-      latitude: position.coords.latitude,
-      longitude: position.coords.longitude,
+      latitude: lat,
+      longitude: lng,
       accuracy: position.coords.accuracy || null,
       heading: position.coords.heading || null,
       speed: position.coords.speed || null,
@@ -97,39 +116,116 @@ const LocationService = (function () {
     };
 
     try {
-      const { error } = await _supabase
+      // First, try upsert (most efficient path)
+      const { data, error } = await _supabase
         .from('user_locations')
-        .upsert(payload, { onConflict: 'user_id' });
+        .upsert(payload, { onConflict: 'user_id' })
+        .select();
 
       if (error) {
-        console.error('[LocationService] Upsert error:', error.message);
-        if (_onError) _onError('database', error.message);
-        return;
+        console.error('[LocationService] ❌ Upsert error:', error.message, error.details, error.hint);
+        
+        // If upsert failed, try a two-step approach: check if row exists, then insert or update
+        if (error.message && (error.message.includes('violates') || error.message.includes('constraint') || error.code === '23505')) {
+          console.log('[LocationService] 🔄 Retrying with explicit update...');
+          const { error: updateError } = await _supabase
+            .from('user_locations')
+            .update({
+              latitude: lat,
+              longitude: lng,
+              accuracy: payload.accuracy,
+              heading: payload.heading,
+              speed: payload.speed,
+              online_status: true,
+              last_updated: payload.last_updated,
+            })
+            .eq('user_id', _userId);
+
+          if (updateError) {
+            console.error('[LocationService] ❌ Update fallback also failed:', updateError.message);
+            if (_onError) _onError('database', updateError.message);
+            return;
+          }
+          console.log('[LocationService] ✅ Update fallback succeeded');
+        } else if (error.message && error.message.includes('does not exist')) {
+          // Table doesn't exist — this is the most critical error
+          console.error('[LocationService] ❌ CRITICAL: user_locations table does not exist! Please run LIVE_LOCATION_SETUP.sql');
+          if (_onError) _onError('table_missing', 'user_locations table does not exist');
+          return;
+        } else {
+          // Try insert as a new row
+          console.log('[LocationService] 🔄 Retrying with explicit insert...');
+          const { error: insertError } = await _supabase
+            .from('user_locations')
+            .insert([payload]);
+
+          if (insertError) {
+            console.error('[LocationService] ❌ Insert fallback failed:', insertError.message);
+            
+            // Last resort: try update without insert
+            const { error: lastResortError } = await _supabase
+              .from('user_locations')
+              .update({
+                latitude: lat,
+                longitude: lng,
+                accuracy: payload.accuracy,
+                heading: payload.heading,
+                speed: payload.speed,
+                online_status: true,
+                last_updated: payload.last_updated,
+                role: payload.role,
+              })
+              .eq('user_id', _userId);
+
+            if (lastResortError) {
+              console.error('[LocationService] ❌ All attempts failed:', lastResortError.message);
+              if (_onError) _onError('database', lastResortError.message);
+              return;
+            }
+            console.log('[LocationService] ✅ Last resort update succeeded');
+          } else {
+            console.log('[LocationService] ✅ Insert fallback succeeded');
+          }
+        }
+      } else {
+        console.log(`[LocationService] ✅ Location saved: ${lat.toFixed(5)}, ${lng.toFixed(5)}`);
       }
 
       // Update tracking state
       _lastSentLocation = {
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
+        latitude: lat,
+        longitude: lng,
       };
       _lastSentTime = now;
-
-      console.log(
-        `[LocationService] 📍 Location saved: ${position.coords.latitude.toFixed(5)}, ${position.coords.longitude.toFixed(5)}`
-      );
+      _firstUpdateSent = true;
+      _retryCount = 0;
 
       if (_onLocationUpdate) {
         _onLocationUpdate({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
+          latitude: lat,
+          longitude: lng,
           accuracy: position.coords.accuracy,
           heading: position.coords.heading,
           speed: position.coords.speed,
         });
       }
+
+      // Fire permission granted callback on first success
+      if (_onPermissionGranted && !_permissionDenied) {
+        _onPermissionGranted();
+      }
     } catch (err) {
-      console.error('[LocationService] Network error:', err);
-      if (_onError) _onError('network', err.message);
+      console.error('[LocationService] ❌ Network/unexpected error:', err);
+      _retryCount++;
+      
+      if (_retryCount <= CONFIG.MAX_RETRY_ATTEMPTS) {
+        console.log(`[LocationService] 🔄 Retry attempt ${_retryCount}/${CONFIG.MAX_RETRY_ATTEMPTS} in ${CONFIG.RETRY_DELAY_MS}ms...`);
+        setTimeout(() => _upsertLocation(position, true), CONFIG.RETRY_DELAY_MS);
+      } else {
+        console.error('[LocationService] ❌ Max retries reached. Giving up for this cycle.');
+        _retryCount = 0;
+        if (_onError) _onError('network', err.message);
+      }
     }
   }
 
@@ -138,15 +234,17 @@ const LocationService = (function () {
     _latestPosition = position;
     _permissionDenied = false;
 
+    console.log(`[LocationService] 🛰️ GPS fix received: lat=${position.coords.latitude.toFixed(6)}, lng=${position.coords.longitude.toFixed(6)}, accuracy=${(position.coords.accuracy || 0).toFixed(1)}m`);
+
     // Remove permission denied UI if it exists
     _removePermissionUI();
 
-    _upsertLocation(position);
+    _upsertLocation(position, !_firstUpdateSent);
   }
 
   // ── watchPosition Error Callback ───────────────────────────
   function _onPositionError(error) {
-    console.warn('[LocationService] GPS Error:', error.message, '(code:', error.code, ')');
+    console.warn('[LocationService] ⚠️ GPS Error:', error.message, '(code:', error.code, ')');
 
     switch (error.code) {
       case error.PERMISSION_DENIED:
@@ -164,7 +262,7 @@ const LocationService = (function () {
         console.warn('[LocationService] GPS timeout, retrying...');
         // Retry after a short delay
         setTimeout(() => {
-          if (_watchId !== null) {
+          if (_isInitialized && _userId) {
             _startWatching();
           }
         }, 3000);
@@ -228,7 +326,7 @@ const LocationService = (function () {
   // ── Start GPS Watching ─────────────────────────────────────
   function _startWatching() {
     if (!navigator.geolocation) {
-      console.error('[LocationService] Geolocation API not supported');
+      console.error('[LocationService] ❌ Geolocation API not supported');
       if (_onError) _onError('not_supported', 'Geolocation not supported by this browser');
       return;
     }
@@ -236,7 +334,10 @@ const LocationService = (function () {
     // Clear existing watch
     if (_watchId !== null) {
       navigator.geolocation.clearWatch(_watchId);
+      _watchId = null;
     }
+
+    console.log('[LocationService] 🛰️ Starting GPS watchPosition...');
 
     _watchId = navigator.geolocation.watchPosition(
       _onPositionSuccess,
@@ -245,6 +346,20 @@ const LocationService = (function () {
     );
 
     console.log('[LocationService] 🛰️ GPS watching started (watchId:', _watchId, ')');
+
+    // Also immediately try getCurrentPosition for faster first fix
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        console.log('[LocationService] 🎯 Quick getCurrentPosition fix received');
+        if (!_firstUpdateSent) {
+          _onPositionSuccess(pos);
+        }
+      },
+      (err) => {
+        console.warn('[LocationService] getCurrentPosition fallback failed:', err.message);
+      },
+      { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }
+    );
   }
 
   // ── Periodic Forced Update ─────────────────────────────────
@@ -255,7 +370,8 @@ const LocationService = (function () {
 
     _intervalId = setInterval(() => {
       if (_latestPosition && _userId) {
-        _upsertLocation(_latestPosition);
+        console.log('[LocationService] ⏰ Periodic forced update...');
+        _upsertLocation(_latestPosition, true);
       }
     }, CONFIG.UPDATE_INTERVAL_MS);
   }
@@ -265,12 +381,16 @@ const LocationService = (function () {
     if (!_supabase || !_userId) return;
 
     try {
-      await _supabase
+      const { error } = await _supabase
         .from('user_locations')
         .update({ online_status: false, last_updated: new Date().toISOString() })
         .eq('user_id', _userId);
 
-      console.log('[LocationService] 🔴 User set to offline');
+      if (error) {
+        console.warn('[LocationService] Error setting offline:', error.message);
+      } else {
+        console.log('[LocationService] 🔴 User set to offline');
+      }
     } catch (err) {
       console.error('[LocationService] Error setting offline:', err);
     }
@@ -280,14 +400,18 @@ const LocationService = (function () {
   function _handleVisibilityChange() {
     if (document.visibilityState === 'hidden') {
       // Page is being hidden/closed — set offline  
-      // Use sendBeacon for reliable delivery
       if (_supabase && _userId) {
         _setOffline();
       }
     } else if (document.visibilityState === 'visible') {
       // Page is visible again — resume tracking
       if (_userId && _latestPosition) {
-        _upsertLocation(_latestPosition);
+        console.log('[LocationService] 👁️ Page visible again, sending location update...');
+        _upsertLocation(_latestPosition, true);
+      }
+      // Restart watching in case it was suspended
+      if (_userId && _isInitialized) {
+        _startWatching();
       }
     }
   }
@@ -296,7 +420,7 @@ const LocationService = (function () {
   function _handleOnline() {
     console.log('[LocationService] 🟢 Network back online');
     if (_latestPosition) {
-      _upsertLocation(_latestPosition);
+      _upsertLocation(_latestPosition, true);
     }
   }
 
@@ -312,6 +436,7 @@ const LocationService = (function () {
    * @param {Object} options.supabase - Supabase client instance
    * @param {string} options.userId - Current user's UUID
    * @param {string} options.userRole - 'worker' | 'customer' | 'admin'
+   * @param {string} [options.userName] - User's display name
    * @param {Function} [options.onPermissionDenied] - Callback when GPS permission denied
    * @param {Function} [options.onPermissionGranted] - Callback when GPS permission granted
    * @param {Function} [options.onLocationUpdate] - Callback with each location update
@@ -323,9 +448,20 @@ const LocationService = (function () {
       stop();
     }
 
+    if (!options.supabase) {
+      console.error('[LocationService] ❌ Cannot init: Supabase client is null');
+      return;
+    }
+
+    if (!options.userId) {
+      console.error('[LocationService] ❌ Cannot init: userId is null/undefined');
+      return;
+    }
+
     _supabase = options.supabase;
     _userId = options.userId;
     _userRole = options.userRole || 'customer';
+    _userName = options.userName || 'Unknown';
     _onPermissionDenied = options.onPermissionDenied || null;
     _onPermissionGranted = options.onPermissionGranted || null;
     _onLocationUpdate = options.onLocationUpdate || null;
@@ -336,6 +472,24 @@ const LocationService = (function () {
     _lastSentTime = 0;
     _latestPosition = null;
     _permissionDenied = false;
+    _firstUpdateSent = false;
+    _retryCount = 0;
+
+    console.log('═══════════════════════════════════════════');
+    console.log('[LocationService] ✅ INITIALIZING');
+    console.log('[LocationService] User ID:', _userId);
+    console.log('[LocationService] Role:', _userRole);
+    console.log('[LocationService] Name:', _userName);
+    console.log('[LocationService] Supabase URL:', _supabase.supabaseUrl || 'connected');
+    console.log('[LocationService] Geolocation API:', navigator.geolocation ? 'SUPPORTED' : 'NOT SUPPORTED');
+    console.log('[LocationService] Protocol:', window.location.protocol);
+    console.log('[LocationService] Secure context:', window.isSecureContext ? 'YES' : 'NO');
+    console.log('═══════════════════════════════════════════');
+
+    // Check if HTTPS or localhost (required for geolocation)
+    if (!window.isSecureContext && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      console.warn('[LocationService] ⚠️ Not a secure context (HTTPS required for geolocation). Location may not work.');
+    }
 
     // Start GPS watching
     _startWatching();
@@ -354,13 +508,14 @@ const LocationService = (function () {
     window.addEventListener('beforeunload', _setOffline);
 
     _isInitialized = true;
-    console.log('[LocationService] ✅ Initialized for user:', _userId, 'role:', _userRole);
   }
 
   /**
    * Stop tracking and clean up
    */
   function stop() {
+    console.log('[LocationService] 🛑 Stopping...');
+
     // Stop GPS watching
     if (_watchId !== null) {
       navigator.geolocation.clearWatch(_watchId);
@@ -388,10 +543,13 @@ const LocationService = (function () {
     // Reset state
     _userId = null;
     _userRole = null;
+    _userName = null;
     _latestPosition = null;
     _lastSentLocation = null;
     _lastSentTime = 0;
     _isInitialized = false;
+    _firstUpdateSent = false;
+    _retryCount = 0;
 
     console.log('[LocationService] 🛑 Stopped and cleaned up');
   }
@@ -423,7 +581,7 @@ const LocationService = (function () {
   async function forceUpdate() {
     if (_latestPosition) {
       _lastSentTime = 0; // Reset throttle
-      await _upsertLocation(_latestPosition);
+      await _upsertLocation(_latestPosition, true);
     }
   }
 

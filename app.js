@@ -660,19 +660,39 @@ async function handleLabourLogin(e) {
     state.currentRole = 'worker';
     e.target.reset();
 
+    console.log('═══════════════════════════════════════════');
+    console.log('[App] ✅ Worker login successful');
+    console.log('[App] Worker ID:', worker.id);
+    console.log('[App] Worker Name:', worker.name);
+    console.log('[App] Worker Email:', worker.email);
+    console.log('═══════════════════════════════════════════');
+
     // Start live GPS tracking via LocationService
     if (typeof LocationService !== 'undefined' && supabaseClient) {
       LocationService.init({
         supabase: supabaseClient,
         userId: worker.id,
         userRole: 'worker',
+        userName: worker.name,
+        onPermissionGranted: () => {
+          console.log('[App] ✅ GPS permission granted for worker');
+        },
+        onPermissionDenied: () => {
+          console.warn('[App] ❌ GPS permission denied for worker');
+          showToast('📍 Location permission required for live tracking', 'info');
+        },
         onLocationUpdate: (pos) => {
-          console.log(`[App] Worker location updated: ${pos.latitude.toFixed(4)}, ${pos.longitude.toFixed(4)}`);
+          console.log(`[App] 📍 Worker location updated: ${pos.latitude.toFixed(4)}, ${pos.longitude.toFixed(4)}`);
         },
         onError: (type, msg) => {
-          console.warn(`[App] Location error (${type}): ${msg}`);
+          console.warn(`[App] ⚠️ Location error (${type}): ${msg}`);
+          if (type === 'table_missing') {
+            showToast('⚠️ Location table not set up. Please run LIVE_LOCATION_SETUP.sql', 'error');
+          }
         },
       });
+    } else {
+      console.warn('[App] LocationService or supabaseClient not available');
     }
 
     showLabourDashboard(worker);
@@ -711,19 +731,39 @@ async function handleCustomerLogin(e) {
     state.currentRole = 'customer';
     e.target.reset();
 
+    console.log('═══════════════════════════════════════════');
+    console.log('[App] ✅ Customer login successful');
+    console.log('[App] Customer ID:', customerUser.id);
+    console.log('[App] Customer Name:', customerUser.full_name);
+    console.log('[App] Customer Email:', customerUser.email);
+    console.log('═══════════════════════════════════════════');
+
     // Start live GPS tracking via LocationService
     if (typeof LocationService !== 'undefined' && supabaseClient) {
       LocationService.init({
         supabase: supabaseClient,
         userId: customerUser.id,
         userRole: 'customer',
+        userName: customerUser.full_name,
+        onPermissionGranted: () => {
+          console.log('[App] ✅ GPS permission granted for customer');
+        },
+        onPermissionDenied: () => {
+          console.warn('[App] ❌ GPS permission denied for customer');
+          showToast('📍 Location permission required for live tracking', 'info');
+        },
         onLocationUpdate: (pos) => {
-          console.log(`[App] Customer location updated: ${pos.latitude.toFixed(4)}, ${pos.longitude.toFixed(4)}`);
+          console.log(`[App] 📍 Customer location updated: ${pos.latitude.toFixed(4)}, ${pos.longitude.toFixed(4)}`);
         },
         onError: (type, msg) => {
-          console.warn(`[App] Location error (${type}): ${msg}`);
+          console.warn(`[App] ⚠️ Location error (${type}): ${msg}`);
+          if (type === 'table_missing') {
+            showToast('⚠️ Location table not set up. Please run LIVE_LOCATION_SETUP.sql', 'error');
+          }
         },
       });
+    } else {
+      console.warn('[App] LocationService or supabaseClient not available');
     }
 
     showCustomerDashboard(customerUser);
@@ -735,7 +775,9 @@ async function handleCustomerLogin(e) {
 }
 
 function logoutUser() {
-  // Stop live GPS tracking
+  console.log('[App] 🚪 Logging out user:', state.currentUser?.id || 'unknown');
+
+  // Stop live GPS tracking first (sets user offline)
   if (typeof LocationService !== 'undefined') {
     LocationService.stop();
   }
@@ -743,6 +785,9 @@ function logoutUser() {
   if (typeof LiveMap !== 'undefined') {
     LiveMap.destroy();
   }
+
+  // Reset admin live map flag
+  _adminLiveMapInitialized = false;
 
   state.currentUser = null;
   state.currentRole = null;
@@ -1351,27 +1396,20 @@ async function fetchUserLocations() {
   try {
     const { data, error } = await supabaseClient
       .from('user_locations')
-      .select('user_id, latitude, longitude, last_updated, online_status');
+      .select('user_id, latitude, longitude, last_updated, online_status, role');
 
     if (error) {
-      // Fallback: try old users table columns if user_locations doesn't exist yet
-      console.warn('user_locations table not found, trying legacy columns:', error.message);
-      const { data: legacyData } = await supabaseClient
-        .from('users')
-        .select('id, last_latitude, last_longitude, last_location_update');
-      if (legacyData) {
-        legacyData.forEach(u => {
-          if (u.last_latitude && u.last_longitude) {
-            state.locationCache[u.id] = {
-              lat: u.last_latitude,
-              lng: u.last_longitude,
-              timestamp: u.last_location_update
-            };
-          }
-        });
+      console.warn('[App] ⚠️ user_locations fetch error:', error.message);
+      // Check if table exists at all
+      if (error.message && (error.message.includes('does not exist') || error.message.includes('relation'))) {
+        console.error('[App] ❌ CRITICAL: user_locations table does not exist!');
+        console.error('[App] Please run the SQL from LIVE_LOCATION_SETUP.sql in your Supabase Dashboard → SQL Editor');
       }
       return;
     }
+
+    // Clear old cache and rebuild
+    state.locationCache = {};
 
     if (data) {
       data.forEach(loc => {
@@ -1380,14 +1418,15 @@ async function fetchUserLocations() {
             lat: loc.latitude,
             lng: loc.longitude,
             timestamp: loc.last_updated,
-            online: loc.online_status
+            online: loc.online_status,
+            role: loc.role
           };
         }
       });
-      console.log(`📍 Loaded ${Object.keys(state.locationCache).length} user locations from user_locations table`);
+      console.log(`[App] 📍 Loaded ${Object.keys(state.locationCache).length} user locations from user_locations table`);
     }
   } catch (err) {
-    console.error('Fetch locations error:', err);
+    console.error('[App] Fetch locations error:', err);
   }
 }
 

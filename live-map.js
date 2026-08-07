@@ -5,13 +5,14 @@
  * ============================================================
  * 
  * Features:
- * - Full-screen Leaflet map with OpenStreetMap tiles
+ * - Full-screen Leaflet map with dark CartoDB tiles
  * - Color-coded markers (Blue=Customer, Orange=Worker, Gray=Offline)
  * - Supabase Realtime subscription for instant updates
+ * - Fallback polling every 15s if Realtime is slow
  * - Search by name, phone, user ID, role
  * - Filter by role (Customer/Worker) and status (Online/Offline)
- * - Click marker for detailed user info popup
- * - Auto-refresh without manual polling
+ * - Smooth marker movement animation
+ * - Professional popup styling
  * - Proper cleanup of subscriptions
  */
 
@@ -26,6 +27,7 @@ const LiveMap = (function () {
   let _userData = {};         // userId -> user data (name, phone, role)
   let _realtimeChannel = null;
   let _offlineCheckInterval = null;
+  let _pollInterval = null;
   let _isInitialized = false;
   let _activeFilters = {
     role: 'all',       // 'all' | 'customer' | 'worker'
@@ -36,8 +38,10 @@ const LiveMap = (function () {
   // ── Configuration ──────────────────────────────────────────
   const OFFLINE_THRESHOLD_MS = 2 * 60 * 1000; // 2 minutes
   const OFFLINE_CHECK_INTERVAL = 30000; // Check every 30 seconds
-  const DEFAULT_CENTER = [20.5937, 78.9629]; // India center
+  const POLL_INTERVAL = 15000; // Fallback poll every 15 seconds
+  const DEFAULT_CENTER = [22.5937, 78.9629]; // India center
   const DEFAULT_ZOOM = 5;
+  const SMOOTH_MOVE_DURATION = 1000; // ms for smooth marker movement
 
   // ── Marker Icons ───────────────────────────────────────────
   function _createMarkerIcon(role, isOnline) {
@@ -93,8 +97,9 @@ const LiveMap = (function () {
     const user = _userData[userId];
     if (!loc) return '';
 
-    const name = user?.full_name || 'Unknown User';
+    const name = user?.full_name || user?.name || 'Unknown User';
     const phone = user?.phone || 'N/A';
+    const email = user?.email || 'N/A';
     const role = (loc.role || user?.role || 'unknown').toUpperCase();
     const isOnline = _isUserOnline(loc);
     const statusText = isOnline ? '🟢 Online' : '🔴 Offline';
@@ -121,16 +126,16 @@ const LiveMap = (function () {
             <span class="live-map-popup__value">${phone}</span>
           </div>
           <div class="live-map-popup__row">
+            <span class="live-map-popup__label">✉️ Email</span>
+            <span class="live-map-popup__value">${email}</span>
+          </div>
+          <div class="live-map-popup__row">
             <span class="live-map-popup__label">🏷️ Role</span>
             <span class="live-map-popup__value live-map-popup__role">${role}</span>
           </div>
           <div class="live-map-popup__row">
-            <span class="live-map-popup__label">📍 Latitude</span>
-            <span class="live-map-popup__value">${loc.latitude.toFixed(6)}</span>
-          </div>
-          <div class="live-map-popup__row">
-            <span class="live-map-popup__label">📍 Longitude</span>
-            <span class="live-map-popup__value">${loc.longitude.toFixed(6)}</span>
+            <span class="live-map-popup__label">📍 Lat / Lng</span>
+            <span class="live-map-popup__value">${loc.latitude.toFixed(6)}, ${loc.longitude.toFixed(6)}</span>
           </div>
           <div class="live-map-popup__row">
             <span class="live-map-popup__label">🎯 Accuracy</span>
@@ -141,11 +146,7 @@ const LiveMap = (function () {
             <span class="live-map-popup__value">${speed}</span>
           </div>
           <div class="live-map-popup__row">
-            <span class="live-map-popup__label">🧭 Heading</span>
-            <span class="live-map-popup__value">${heading}</span>
-          </div>
-          <div class="live-map-popup__row">
-            <span class="live-map-popup__label">🕐 Last Updated</span>
+            <span class="live-map-popup__label">🕐 Updated</span>
             <span class="live-map-popup__value">${lastUpdated}</span>
           </div>
         </div>
@@ -181,7 +182,7 @@ const LiveMap = (function () {
 
     const isOnline = _isUserOnline(loc);
     const role = (loc.role || user?.role || '').toLowerCase();
-    const name = (user?.full_name || '').toLowerCase();
+    const name = (user?.full_name || user?.name || '').toLowerCase();
     const phone = (user?.phone || '').toLowerCase();
 
     // Role filter
@@ -211,6 +212,36 @@ const LiveMap = (function () {
     return true;
   }
 
+  // ── Smooth marker movement ─────────────────────────────────
+  function _smoothMoveMarker(marker, newLatLng, duration) {
+    if (!marker || !marker.getLatLng) return;
+    
+    const startLatLng = marker.getLatLng();
+    const startTime = performance.now();
+
+    // If same position, just update icon
+    if (startLatLng.lat === newLatLng[0] && startLatLng.lng === newLatLng[1]) return;
+
+    function animate(currentTime) {
+      const elapsed = currentTime - startTime;
+      const t = Math.min(elapsed / duration, 1);
+      
+      // Ease-out cubic
+      const ease = 1 - Math.pow(1 - t, 3);
+      
+      const lat = startLatLng.lat + (newLatLng[0] - startLatLng.lat) * ease;
+      const lng = startLatLng.lng + (newLatLng[1] - startLatLng.lng) * ease;
+      
+      marker.setLatLng([lat, lng]);
+      
+      if (t < 1) {
+        requestAnimationFrame(animate);
+      }
+    }
+    
+    requestAnimationFrame(animate);
+  }
+
   // ── Add or Update a Marker ─────────────────────────────────
   function _addOrUpdateMarker(userId) {
     const loc = _locationData[userId];
@@ -234,8 +265,8 @@ const LiveMap = (function () {
     const popupContent = _buildPopupContent(userId);
 
     if (_markers[userId]) {
-      // Update existing marker position and icon
-      _markers[userId].setLatLng([loc.latitude, loc.longitude]);
+      // Smooth-move existing marker
+      _smoothMoveMarker(_markers[userId], [loc.latitude, loc.longitude], SMOOTH_MOVE_DURATION);
       _markers[userId].setIcon(icon);
       _markers[userId].setPopupContent(popupContent);
     } else {
@@ -243,11 +274,12 @@ const LiveMap = (function () {
       const marker = L.marker([loc.latitude, loc.longitude], { icon })
         .addTo(_map)
         .bindPopup(popupContent, {
-          maxWidth: 320,
+          maxWidth: 340,
           className: 'live-map-popup-wrapper',
         });
 
       _markers[userId] = marker;
+      console.log(`[LiveMap] 📍 New marker created for ${user?.full_name || userId} at [${loc.latitude.toFixed(4)}, ${loc.longitude.toFixed(4)}]`);
     }
   }
 
@@ -303,7 +335,7 @@ const LiveMap = (function () {
         .select('*');
 
       if (locError) {
-        console.error('[LiveMap] Fetch locations error:', locError.message);
+        console.error('[LiveMap] ❌ Fetch locations error:', locError.message);
         return;
       }
 
@@ -313,7 +345,7 @@ const LiveMap = (function () {
         .select('id, full_name, phone, role, email');
 
       if (usrError) {
-        console.error('[LiveMap] Fetch users error:', usrError.message);
+        console.error('[LiveMap] ❌ Fetch users error:', usrError.message);
       }
 
       // Index user data
@@ -337,12 +369,12 @@ const LiveMap = (function () {
       const validMarkers = Object.values(_markers);
       if (validMarkers.length > 0) {
         const group = L.featureGroup(validMarkers);
-        _map.fitBounds(group.getBounds().pad(0.1));
+        _map.fitBounds(group.getBounds().pad(0.2));
       }
 
       console.log(`[LiveMap] ✅ Loaded ${locations?.length || 0} locations, ${users?.length || 0} users`);
     } catch (err) {
-      console.error('[LiveMap] Fetch error:', err);
+      console.error('[LiveMap] ❌ Fetch error:', err);
     }
   }
 
@@ -387,8 +419,51 @@ const LiveMap = (function () {
         }
       )
       .subscribe((status) => {
-        console.log('[LiveMap] Realtime subscription status:', status);
+        console.log('[LiveMap] 📡 Realtime subscription status:', status);
+        if (status === 'SUBSCRIBED') {
+          console.log('[LiveMap] ✅ Realtime is ACTIVE — live updates enabled');
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.warn('[LiveMap] ⚠️ Realtime subscription error, relying on polling fallback');
+        }
       });
+  }
+
+  // ── Fallback Polling ───────────────────────────────────────
+  // Polls the database periodically in case Realtime subscription fails
+  function _startPolling() {
+    if (_pollInterval) clearInterval(_pollInterval);
+
+    _pollInterval = setInterval(async () => {
+      if (!_supabase || !_isInitialized) return;
+
+      try {
+        const { data: locations, error } = await _supabase
+          .from('user_locations')
+          .select('*');
+
+        if (error) {
+          console.warn('[LiveMap] Poll error:', error.message);
+          return;
+        }
+
+        if (locations) {
+          let changed = false;
+          locations.forEach(loc => {
+            const existing = _locationData[loc.user_id];
+            if (!existing || existing.last_updated !== loc.last_updated) {
+              _locationData[loc.user_id] = loc;
+              _addOrUpdateMarker(loc.user_id);
+              changed = true;
+            }
+          });
+          if (changed) {
+            _updateStatsUI();
+          }
+        }
+      } catch (err) {
+        console.warn('[LiveMap] Poll exception:', err);
+      }
+    }, POLL_INTERVAL);
   }
 
   // ── Periodic Offline Check ─────────────────────────────────
@@ -397,23 +472,11 @@ const LiveMap = (function () {
     if (_offlineCheckInterval) clearInterval(_offlineCheckInterval);
 
     _offlineCheckInterval = setInterval(() => {
-      let changed = false;
       Object.keys(_locationData).forEach(userId => {
-        const loc = _locationData[userId];
-        const wasOnline = _isUserOnline({ ...loc, last_updated: loc._lastCheckedOnline });
-        const isNowOnline = _isUserOnline(loc);
-
-        if (wasOnline !== undefined && wasOnline !== isNowOnline) {
-          changed = true;
-        }
-
-        // Update marker icon if user went offline
+        // Re-render marker (will update icon to gray if offline)
         _addOrUpdateMarker(userId);
       });
-
-      if (changed) {
-        _updateStatsUI();
-      }
+      _updateStatsUI();
     }, OFFLINE_CHECK_INTERVAL);
   }
 
@@ -465,9 +528,11 @@ const LiveMap = (function () {
     // Wait for container to be visible
     const container = document.getElementById(containerId);
     if (!container) {
-      console.error('[LiveMap] Map container not found:', containerId);
+      console.error('[LiveMap] ❌ Map container not found:', containerId);
       return;
     }
+
+    console.log('[LiveMap] 🗺️ Initializing map in container:', containerId);
 
     // Define strict India LatLng bounds
     const INDIA_BOUNDS = L.latLngBounds(
@@ -479,20 +544,23 @@ const LiveMap = (function () {
     _map = L.map(containerId, {
       center: [22.5937, 78.9629],
       zoom: 5,
-      minZoom: 4.5,
+      minZoom: 4,
       maxZoom: 18,
       maxBounds: INDIA_BOUNDS,
       maxBoundsViscosity: 1.0,
-      zoomControl: true,
+      zoomControl: false,
       attributionControl: true,
     });
+
+    // Add custom zoom control to top-right
+    L.control.zoom({ position: 'topright' }).addTo(_map);
 
     // Fit view to India by default
     _map.fitBounds(INDIA_BOUNDS);
 
-    // Add OpenStreetMap tile layer with dark theme
+    // Add dark CartoDB tile layer
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      attribution: '© OpenStreetMap contributors © CARTO',
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
       maxZoom: 19,
       subdomains: 'abcd',
     }).addTo(_map);
@@ -506,11 +574,14 @@ const LiveMap = (function () {
     // Subscribe to realtime updates
     _subscribeRealtime();
 
+    // Start fallback polling
+    _startPolling();
+
     // Start offline checking
     _startOfflineCheck();
 
     _isInitialized = true;
-    console.log('[LiveMap] ✅ Live map initialized');
+    console.log('[LiveMap] ✅ Live map initialized successfully');
   }
 
   /**
@@ -523,10 +594,14 @@ const LiveMap = (function () {
       _realtimeChannel = null;
     }
 
-    // Stop offline check
+    // Stop intervals
     if (_offlineCheckInterval) {
       clearInterval(_offlineCheckInterval);
       _offlineCheckInterval = null;
+    }
+    if (_pollInterval) {
+      clearInterval(_pollInterval);
+      _pollInterval = null;
     }
 
     // Remove all markers
@@ -572,7 +647,7 @@ const LiveMap = (function () {
    */
   function invalidateSize() {
     if (_map) {
-      setTimeout(() => _map.invalidateSize(), 100);
+      setTimeout(() => _map.invalidateSize(), 150);
     }
   }
 
