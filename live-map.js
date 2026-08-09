@@ -137,14 +137,15 @@ const LiveMap = (function () {
   }
 
   // ── Popup Content Renderer ─────────────────────────────────
+  // Shows only fields with real data; hides unavailable fields
   function _buildPopupContent(userId) {
     const loc = _locationData[userId];
     const user = _userData[userId] || {};
     if (!loc) return '';
 
     const name = user.full_name || user.name || 'Anonymous User';
-    const phone = user.phone || 'N/A';
-    const email = user.email || 'N/A';
+    const phone = user.phone || '';
+    const email = user.email || '';
     const photo = user.photo || '';
     const initials = name.replace(/\(.*?\)/g, '').trim().split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() || 'U';
 
@@ -160,15 +161,52 @@ const LiveMap = (function () {
           minute: '2-digit',
           second: '2-digit',
         })
-      : 'Unknown';
+      : '';
 
-    const accuracyText = (loc.accuracy !== undefined && loc.accuracy !== null)
-      ? `${Math.round(loc.accuracy)} meters`
-      : 'GPS Standard';
+    const hasAccuracy = loc.accuracy !== undefined && loc.accuracy !== null;
+    const accuracyText = hasAccuracy ? `${Math.round(loc.accuracy)} m` : '';
 
     const avatarHtml = photo
       ? `<img src="${photo}" alt="${name}" class="live-map-popup__avatar-img" />`
       : `<div class="live-map-popup__avatar-fallback">${initials}</div>`;
+
+    // Build info rows — only include fields that have real data
+    let infoRows = '';
+    if (phone) {
+      infoRows += `
+          <div class="live-map-popup__info-row">
+            <span class="live-map-popup__info-label">📞 Phone</span>
+            <span class="live-map-popup__info-value">${phone}</span>
+          </div>`;
+    }
+    if (email) {
+      infoRows += `
+          <div class="live-map-popup__info-row">
+            <span class="live-map-popup__info-label">✉️ Email</span>
+            <span class="live-map-popup__info-value">${email}</span>
+          </div>`;
+    }
+    infoRows += `
+          <div class="live-map-popup__info-row">
+            <span class="live-map-popup__info-label">📍 Coordinates</span>
+            <span class="live-map-popup__info-value live-map-popup__info-value--mono">
+              ${loc.latitude.toFixed(6)}, ${loc.longitude.toFixed(6)}
+            </span>
+          </div>`;
+    if (accuracyText) {
+      infoRows += `
+          <div class="live-map-popup__info-row">
+            <span class="live-map-popup__info-label">🎯 Accuracy</span>
+            <span class="live-map-popup__info-value">${accuracyText}</span>
+          </div>`;
+    }
+    if (lastUpdatedFormatted) {
+      infoRows += `
+          <div class="live-map-popup__info-row">
+            <span class="live-map-popup__info-label">🕐 Last Updated</span>
+            <span class="live-map-popup__info-value">${lastUpdatedFormatted}</span>
+          </div>`;
+    }
 
     return `
       <div class="live-map-popup">
@@ -190,28 +228,7 @@ const LiveMap = (function () {
         </div>
 
         <div class="live-map-popup__body">
-          <div class="live-map-popup__info-row">
-            <span class="live-map-popup__info-label">📞 Phone</span>
-            <span class="live-map-popup__info-value">${phone}</span>
-          </div>
-          <div class="live-map-popup__info-row">
-            <span class="live-map-popup__info-label">✉️ Email</span>
-            <span class="live-map-popup__info-value">${email}</span>
-          </div>
-          <div class="live-map-popup__info-row">
-            <span class="live-map-popup__info-label">📍 Coordinates</span>
-            <span class="live-map-popup__info-value live-map-popup__info-value--mono">
-              ${loc.latitude.toFixed(6)}, ${loc.longitude.toFixed(6)}
-            </span>
-          </div>
-          <div class="live-map-popup__info-row">
-            <span class="live-map-popup__info-label">🎯 Accuracy</span>
-            <span class="live-map-popup__info-value">${accuracyText}</span>
-          </div>
-          <div class="live-map-popup__info-row">
-            <span class="live-map-popup__info-label">🕐 Last Updated</span>
-            <span class="live-map-popup__info-value">${lastUpdatedFormatted}</span>
-          </div>
+          ${infoRows}
         </div>
 
         <div class="live-map-popup__footer">
@@ -363,9 +380,23 @@ const LiveMap = (function () {
       _addOrUpdateMarker(userId);
     });
     _updateStatsUI();
+    _updateEmptyState();
 
     if (shouldAutoZoom) {
       _applyAutoZoom();
+    }
+  }
+
+  // ── Empty State Visibility ────────────────────────────────
+  function _updateEmptyState() {
+    const emptyEl = document.getElementById('livemap-empty-state');
+    if (!emptyEl) return;
+
+    const markerCount = Object.keys(_markers).length;
+    if (markerCount === 0) {
+      emptyEl.classList.remove('hidden');
+    } else {
+      emptyEl.classList.add('hidden');
     }
   }
 
