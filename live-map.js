@@ -103,25 +103,34 @@ const LiveMap = (function () {
                      : roleInfo.key === 'worker' ? '👷'
                      : roleInfo.key === 'customer' ? '🏠' : '⚫';
 
-    let avatarInner = photo
+    const avatarInner = photo
       ? `<img src="${photo}" alt="${name}" class="map-marker-pin__img" />`
       : `<span class="map-marker-pin__initials">${initials || iconSymbol}</span>`;
 
+    // High-readability floating card tag + pin stem pointer
     const pinHtml = `
-      <div class="map-marker-pin map-marker-pin--${roleInfo.key}">
-        <div class="map-marker-pin__avatar">
-          ${avatarInner}
+      <div class="map-marker-card map-marker-card--${roleInfo.key} ${isOnline ? 'is-online' : 'is-offline'}">
+        <div class="map-marker-card__tag">
+          <span class="map-marker-card__status-dot ${isOnline ? 'online' : 'offline'}"></span>
+          <span class="map-marker-card__name">${name}</span>
+          <span class="map-marker-card__role-pill map-marker-card__role-pill--${roleInfo.key}">${roleInfo.label}</span>
         </div>
-        ${isOnline ? `<div class="map-marker-pin__status-dot"></div>` : ''}
+        <div class="map-marker-pin map-marker-pin--${roleInfo.key}">
+          <div class="map-marker-pin__avatar">
+            ${avatarInner}
+          </div>
+          ${isOnline ? `<div class="map-marker-pin__pulse-ring"></div>` : ''}
+          <div class="map-marker-pin__pointer map-marker-pin__pointer--${roleInfo.key}"></div>
+        </div>
       </div>
     `;
 
     return L.divIcon({
       className: `map-marker-wrapper map-marker-wrapper--${roleInfo.key}`,
       html: pinHtml,
-      iconSize: [42, 42],
-      iconAnchor: [21, 21],
-      popupAnchor: [0, -24],
+      iconSize: [180, 68],
+      iconAnchor: [90, 64],
+      popupAnchor: [0, -68],
     });
   }
 
