@@ -53,6 +53,21 @@
   box-sizing: border-box;
 }
 
+ul, ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+li {
+  list-style: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -2796,6 +2811,7 @@ input:focus, textarea:focus, select:focus {
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   flex-wrap: wrap;
+}
 
 .leaflet-container .leaflet-control-attribution a {
   color: var(--amber-light) !important;
@@ -3625,7 +3641,7 @@ input:focus, textarea:focus, select:focus {
   }
 }
 
-}/* ============================================================
+/* ============================================================
    LIVE MAP — ENTERPRISE UI POLISH (Consolidated)
    ============================================================ */
 
