@@ -241,6 +241,14 @@ function setupEventListeners() {
       navEl.classList.toggle('topbar__nav--open');
       mobileToggle.classList.toggle('topbar__mobile-toggle--active');
     });
+
+    // Auto-close mobile nav drawer when any nav link/button is clicked
+    navEl.querySelectorAll('.nav-link, button').forEach(function(link) {
+      link.addEventListener('click', function() {
+        navEl.classList.remove('topbar__nav--open');
+        mobileToggle.classList.remove('topbar__mobile-toggle--active');
+      });
+    });
   }
 
   if (elements.labourLoginForm) elements.labourLoginForm.addEventListener('submit', handleLabourLogin);
