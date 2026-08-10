@@ -1186,13 +1186,15 @@
         </div>
       </main>
 
-      <!-- Streamlined Enterprise Minimal Footer -->
-      <footer class="app-footer app-footer--minimal">
-        <div class="app-footer__inner">
-          <div class="app-footer__brand-side">
+      <!-- Streamlined Enterprise Premium Footer v2 -->
+      <footer class="app-footer app-footer--v2">
+        <div class="app-footer__glow-bar"></div>
+
+        <div class="app-footer__main">
+          <div class="app-footer__about-box">
             <div class="brand" onclick="showView('home')" role="button" tabindex="0">
               <div class="brand__logo">
-                <svg width="30" height="30" viewBox="0 0 40 40" fill="none">
+                <svg width="34" height="34" viewBox="0 0 40 40" fill="none">
                   <rect width="40" height="40" rx="10" fill="url(#brandGrad)"/>
                   <path d="M12 24C12 18.4772 15.5817 14 20 14C24.4183 14 28 18.4772 28 24H12Z" stroke="white" stroke-width="2.5" stroke-linejoin="round"/>
                   <rect x="9" y="24" width="22" height="3" rx="1.5" fill="white"/>
@@ -1201,24 +1203,47 @@
                 </svg>
               </div>
               <div class="brand__header-wrap">
-                <h3 style="font-size: 1.15rem; margin: 0; color: #fff;">Shramik Setu</h3>
+                <h3 style="font-size: 1.25rem; margin: 0; color: #fff;">Shramik Setu</h3>
                 <span class="brand__tag-badge">श्रमिक सेतु</span>
               </div>
             </div>
-            <p class="app-footer__tagline">Direct Skilled Workforce Platform for India</p>
+
+            <p class="app-footer__about-text">
+              India's direct skilled workforce platform. Connecting Electricians, Plumbers, Masons, Painters, Carpenters, and Welders directly with house owners and builders — 100% commission-free with real-time live location tracking.
+            </p>
+
+            <div class="app-footer__pills">
+              <span class="app-footer__pill">🇮🇳 Direct Worker Network</span>
+              <span class="app-footer__pill">⚡ 0% Middleman Cut</span>
+              <span class="app-footer__pill">🟢 Live GPS Tracking</span>
+            </div>
           </div>
 
-          <nav class="app-footer__links-side">
-            <a href="#" onclick="showView('home')">Home</a>
-            <a href="#" onclick="showView('browse-workers')">Find Workers</a>
-            <a href="#" onclick="showToast('Privacy Policy: All worker & customer data secured in Supabase', 'info')">Privacy Policy</a>
-            <a href="#" onclick="showToast('Terms of Service: Direct hiring platform rules apply', 'info')">Terms of Service</a>
-            <a href="#" onclick="openAdminSecretModal()" class="app-footer__admin-btn">Admin Access 🛡️</a>
-          </nav>
+          <div class="app-footer__nav-box">
+            <h4 class="app-footer__nav-title">Quick Navigation</h4>
+            <nav class="app-footer__nav-links">
+              <a href="#" onclick="showView('home')">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 8l6-6 6 6M4 7v6h3v-4h2v4h3V7" stroke="currentColor" stroke-width="1.5"/></svg>
+                Home
+              </a>
+              <a href="#" onclick="showView('browse-workers')">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.5"/></svg>
+                Find Workers
+              </a>
+              <a href="#" onclick="showToast('Privacy Policy: All worker & customer data secured in Supabase', 'info')">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M5 7V4.5a3 3 0 016 0V7" stroke="currentColor" stroke-width="1.5"/></svg>
+                Privacy Policy
+              </a>
+              <a href="#" onclick="showToast('Terms of Service: Direct hiring platform rules apply', 'info')">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 2h8a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.5"/><line x1="6" y1="5" x2="10" y2="5" stroke="currentColor" stroke-width="1.5"/><line x1="6" y1="8" x2="10" y2="8" stroke="currentColor" stroke-width="1.5"/></svg>
+                Terms of Service
+              </a>
+            </nav>
+          </div>
         </div>
 
-        <div class="app-footer__bottom-line">
-          <p>© 2026 Shramik Setu. All Rights Reserved. 100% Direct Connection &amp; Zero Commission Platform.</p>
+        <div class="app-footer__bottom-bar">
+          <p>© 2026 Shramik Setu (श्रमिक सेतु). All Rights Reserved. Empowering skilled workers across India.</p>
         </div>
       </footer>
     </div>
