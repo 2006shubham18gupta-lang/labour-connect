@@ -384,6 +384,54 @@ function handleAction(action, targetEl) {
   }
 }
 
+function updateNavigationUI() {
+  const guestAuthEl = document.getElementById('topbar-auth-guest');
+  const userAuthEl = document.getElementById('topbar-auth-user');
+  const userAvatarEl = document.getElementById('topbar-user-avatar');
+  const userNameEl = document.getElementById('topbar-user-name');
+  const userRoleBadgeEl = document.getElementById('topbar-user-role-badge');
+  const dashboardBtnEl = document.getElementById('topbar-dashboard-btn');
+
+  if (!guestAuthEl || !userAuthEl) return;
+
+  if (state.currentUser) {
+    // Hide guest login & registration buttons
+    guestAuthEl.classList.add('hidden');
+    userAuthEl.classList.remove('hidden');
+
+    const name = state.currentUser.full_name || state.currentUser.name || 'User';
+    const role = (state.currentRole || state.currentUser.role || 'user').toUpperCase();
+    const initials = name.replace(/\(.*?\)/g, '').trim().split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() || 'U';
+
+    if (userNameEl) userNameEl.textContent = name;
+    if (userRoleBadgeEl) {
+      userRoleBadgeEl.textContent = role;
+      userRoleBadgeEl.className = `topbar__user-role-badge topbar__user-role-badge--${role.toLowerCase()}`;
+    }
+
+    if (userAvatarEl) {
+      if (state.currentUser.photo) {
+        userAvatarEl.innerHTML = `<img src="${state.currentUser.photo}" alt="${name}" class="topbar__user-avatar-img" />`;
+      } else {
+        userAvatarEl.textContent = initials;
+      }
+    }
+
+    if (dashboardBtnEl) {
+      dashboardBtnEl.onclick = () => {
+        if (state.currentRole === 'worker') showView('labour-dashboard');
+        else if (state.currentRole === 'customer') showView('customer-dashboard');
+        else if (state.currentRole === 'admin') showView('admin-dashboard');
+        else showView('home');
+      };
+    }
+  } else {
+    // Show guest login buttons when logged out
+    guestAuthEl.classList.remove('hidden');
+    userAuthEl.classList.add('hidden');
+  }
+}
+
 function showView(viewName) {
   if (viewName === 'admin-dashboard' && state.currentRole !== 'admin') {
     openAdminSecretModal();
@@ -437,9 +485,10 @@ function showView(viewName) {
 
   state.currentView = viewName;
 
-  document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('nav-link--active'));
+  document.querySelectorAll('.topbar__nav .nav-link').forEach(link => link.classList.remove('nav-link--active'));
+  updateNavigationUI();
   const activeAction = `show-${viewName}`;
-  const activeNav = document.querySelector(`[data-action="${activeAction}"]`);
+  const activeNav = document.querySelector(`.topbar__nav [data-action="${activeAction}"]`);
   if (activeNav) activeNav.classList.add('nav-link--active');
 
   window.scrollTo({ top: 0, behavior: 'smooth' });

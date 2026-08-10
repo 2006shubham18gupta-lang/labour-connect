@@ -21,7 +21,7 @@
     <div class="app-shell">
       <!-- Topbar Header -->
       <header class="topbar">
-        <div class="brand" data-action="show-home">
+        <div class="brand" onclick="showView('home')" role="button" tabindex="0">
           <div class="brand__logo">
             <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
               <rect width="40" height="40" rx="10" fill="url(#brandGrad)"/>
@@ -61,20 +61,42 @@
 
           <div class="nav-divider"></div>
 
-          <button class="nav-link nav-link--labour" data-action="show-labour-login">
-            <span class="nav-link__icon">👷</span>
-            Worker Login
-          </button>
+          <!-- Guest State: Show Login & Register buttons when NOT logged in -->
+          <div class="topbar__auth-guest" id="topbar-auth-guest">
+            <button class="nav-link nav-link--labour" data-action="show-labour-login">
+              <span class="nav-link__icon">👷</span>
+              Worker Login
+            </button>
 
-          <button class="nav-link nav-link--customer" data-action="show-customer-login">
-            <span class="nav-link__icon">🏠</span>
-            Customer Login
-          </button>
+            <button class="nav-link nav-link--customer" data-action="show-customer-login">
+              <span class="nav-link__icon">🏠</span>
+              Customer Login
+            </button>
 
-          <button class="nav-link nav-link--accent" data-action="show-labour-register">
-            <span class="nav-link__icon">⚡</span>
-            Register as Worker
-          </button>
+            <button class="nav-link nav-link--accent" data-action="show-labour-register">
+              <span class="nav-link__icon">⚡</span>
+              Register as Worker
+            </button>
+          </div>
+
+          <!-- Logged-In User State: Shown when a user is logged in -->
+          <div class="topbar__auth-user hidden" id="topbar-auth-user">
+            <div class="topbar__user-chip" id="topbar-user-chip">
+              <div class="topbar__user-avatar" id="topbar-user-avatar">U</div>
+              <span class="topbar__user-name" id="topbar-user-name">User</span>
+              <span class="topbar__user-role-badge" id="topbar-user-role-badge">USER</span>
+            </div>
+
+            <button class="nav-link nav-link--dashboard" id="topbar-dashboard-btn">
+              <span class="nav-link__icon">📊</span>
+              My Dashboard
+            </button>
+
+            <button class="nav-link nav-link--logout" id="topbar-logout-btn" onclick="logoutUser()">
+              <span class="nav-link__icon">🚪</span>
+              Logout
+            </button>
+          </div>
         </nav>
 
         <button class="topbar__mobile-toggle" id="mobile-nav-toggle" aria-label="Toggle Navigation">
