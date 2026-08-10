@@ -161,13 +161,23 @@ input:focus, textarea:focus, select:focus {
   user-select: none;
 }
 
-.brand__logo svg {
-  filter: drop-shadow(0 4px 12px rgba(245, 158, 11, 0.4));
+.brand__logo svg,
+.brand__logo-img {
+  height: 44px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 14px rgba(245, 158, 11, 0.45));
   transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border-radius: 6px;
 }
 
-.brand:hover .brand__logo svg {
-  transform: scale(1.08) rotate(4deg);
+.brand__logo-img--footer {
+  height: 48px;
+}
+
+.brand:hover .brand__logo svg,
+.brand:hover .brand__logo-img {
+  transform: scale(1.08) rotate(2deg);
 }
 
 .brand__header-wrap {
