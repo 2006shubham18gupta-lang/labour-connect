@@ -9,8 +9,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Shramik Setu" />
-    <link rel="icon" type="image/png" href="./assets/logo.png" />
-    <link rel="apple-touch-icon" href="./assets/logo.png" />
+    <link rel="icon" type="image/x-icon" href="./favicon.ico" />
     <!-- Modern Typography Google Fonts & Lucide Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,9 +21,23 @@
     <div class="app-shell">
       <!-- Topbar Header -->
       <header class="topbar">
-        <div class="brand" onclick="showView('home')" role="button" tabindex="0">
+        <div class="brand" data-action="show-home">
           <div class="brand__logo">
-            <img src="assets/logo.png" alt="Shramik Setu Logo" class="brand__logo-img" />
+            <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+              <rect width="40" height="40" rx="10" fill="url(#brandGrad)"/>
+              <!-- Hardhat / Helmet & Tools Icon -->
+              <path d="M12 24C12 18.4772 15.5817 14 20 14C24.4183 14 28 18.4772 28 24H12Z" stroke="white" stroke-width="2.5" stroke-linejoin="round"/>
+              <rect x="9" y="24" width="22" height="3" rx="1.5" fill="white"/>
+              <path d="M20 10V14" stroke="#fbbf24" stroke-width="2.5" stroke-linecap="round"/>
+              <circle cx="20" cy="9" r="1.5" fill="#fbbf24"/>
+              <defs>
+                <linearGradient id="brandGrad" x1="0" y1="0" x2="40" y2="40">
+                  <stop stop-color="#f59e0b"/>
+                  <stop offset="0.6" stop-color="#f97316"/>
+                  <stop offset="1" stop-color="#d97706"/>
+                </linearGradient>
+              </defs>
+            </svg>
           </div>
           <div>
             <div class="brand__header-wrap">
@@ -48,42 +61,20 @@
 
           <div class="nav-divider"></div>
 
-          <!-- Guest State: Show Login & Register buttons when NOT logged in -->
-          <div class="topbar__auth-guest" id="topbar-auth-guest">
-            <button class="nav-link nav-link--labour" data-action="show-labour-login">
-              <span class="nav-link__icon">👷</span>
-              Worker Login
-            </button>
+          <button class="nav-link nav-link--labour" data-action="show-labour-login">
+            <span class="nav-link__icon">👷</span>
+            Worker Login
+          </button>
 
-            <button class="nav-link nav-link--customer" data-action="show-customer-login">
-              <span class="nav-link__icon">🏠</span>
-              Customer Login
-            </button>
+          <button class="nav-link nav-link--customer" data-action="show-customer-login">
+            <span class="nav-link__icon">🏠</span>
+            Customer Login
+          </button>
 
-            <button class="nav-link nav-link--accent" data-action="show-labour-register">
-              <span class="nav-link__icon">⚡</span>
-              Register as Worker
-            </button>
-          </div>
-
-          <!-- Logged-In User State: Shown when a user is logged in -->
-          <div class="topbar__auth-user hidden" id="topbar-auth-user">
-            <div class="topbar__user-chip" id="topbar-user-chip">
-              <div class="topbar__user-avatar" id="topbar-user-avatar">U</div>
-              <span class="topbar__user-name" id="topbar-user-name">User</span>
-              <span class="topbar__user-role-badge" id="topbar-user-role-badge">USER</span>
-            </div>
-
-            <button class="nav-link nav-link--dashboard" id="topbar-dashboard-btn">
-              <span class="nav-link__icon">📊</span>
-              My Dashboard
-            </button>
-
-            <button class="nav-link nav-link--logout" id="topbar-logout-btn" onclick="logoutUser()">
-              <span class="nav-link__icon">🚪</span>
-              Logout
-            </button>
-          </div>
+          <button class="nav-link nav-link--accent" data-action="show-labour-register">
+            <span class="nav-link__icon">⚡</span>
+            Register as Worker
+          </button>
         </nav>
 
         <button class="topbar__mobile-toggle" id="mobile-nav-toggle" aria-label="Toggle Navigation">
@@ -928,25 +919,6 @@
               </button>
             </div>
 
-            <!-- My Bookings Section -->
-            <div class="customer-bookings-section" id="customer-bookings-section">
-              <div class="labour-edit-section" style="margin-bottom: 24px;">
-                <div class="labour-edit-section__header">
-                  <div>
-                    <h4>📋 My Bookings &amp; Worker Details (मेरी बुकिंग और मज़दूर जानकारी)</h4>
-                    <p>View your booked workers' complete contact details — call or WhatsApp them directly</p>
-                  </div>
-                </div>
-                <div class="bookings-grid" id="customer-bookings-list">
-                  <div class="empty-state">
-                    <div class="empty-state__icon">📋</div>
-                    <h3>No bookings yet</h3>
-                    <p>When you hire a worker, your booking details will appear here with full worker contact info!</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
             <!-- Worker Directory Cards Grid -->
             <div class="labour-grid" id="labour-list"></div>
           </section>
@@ -1160,12 +1132,6 @@
             <!-- Clean Enterprise Leaflet Map Container -->
             <div class="livemap-container" id="livemap-container-frame">
               <div id="admin-live-map" class="livemap-map"></div>
-              <!-- Empty State — shown when no markers are visible -->
-              <div id="livemap-empty-state" class="livemap-empty-state hidden">
-                <div class="livemap-empty-state__icon">📍</div>
-                <div class="livemap-empty-state__title">No Active Live Locations</div>
-                <div class="livemap-empty-state__subtitle">Users will appear here when they share their location</div>
-              </div>
             </div>
 
             <!-- Professional Operations Map Legend -->
@@ -1192,58 +1158,74 @@
         </div>
       </main>
 
-      <!-- Streamlined Enterprise Premium Footer v2 -->
-      <footer class="app-footer app-footer--v2">
-        <div class="app-footer__glow-bar"></div>
-
-        <div class="app-footer__main">
-          <div class="app-footer__about-box">
-            <div class="brand" onclick="showView('home')" role="button" tabindex="0">
+      <footer class="app-footer">
+        <div class="app-footer__grid">
+          <div class="app-footer__col app-footer__col--brand">
+            <div class="brand" style="margin-bottom: 12px;">
               <div class="brand__logo">
-                <img src="assets/logo.png" alt="Shramik Setu Logo" class="brand__logo-img brand__logo-img--footer" />
+                <svg width="32" height="32" viewBox="0 0 40 40" fill="none">
+                  <rect width="40" height="40" rx="10" fill="url(#brandGrad)"/>
+                  <path d="M12 24C12 18.4772 15.5817 14 20 14C24.4183 14 28 18.4772 28 24H12Z" stroke="white" stroke-width="2.5" stroke-linejoin="round"/>
+                  <rect x="9" y="24" width="22" height="3" rx="1.5" fill="white"/>
+                  <path d="M20 10V14" stroke="#fbbf24" stroke-width="2.5" stroke-linecap="round"/>
+                  <circle cx="20" cy="9" r="1.5" fill="#fbbf24"/>
+                </svg>
               </div>
               <div class="brand__header-wrap">
-                <h3 style="font-size: 1.25rem; margin: 0; color: #fff;">Shramik Setu</h3>
+                <h3 style="font-size: 1.2rem; margin: 0; color: #fff;">Shramik Setu</h3>
                 <span class="brand__tag-badge">श्रमिक सेतु</span>
               </div>
             </div>
-
-            <p class="app-footer__about-text">
-              India's direct skilled workforce platform. Connecting Electricians, Plumbers, Masons, Painters, Carpenters, and Welders directly with house owners and builders — 100% commission-free with real-time live location tracking.
+            <p style="color: var(--muted); font-size: 0.85rem; line-height: 1.6; margin-bottom: 16px;">
+              India's #1 Direct Skilled Workforce Platform. Connecting Masons, Electricians, Plumbers, Painters &amp; Welders directly with house owners &amp; builders without middleman agency cuts.
             </p>
-
-            <div class="app-footer__pills">
-              <span class="app-footer__pill">🇮🇳 Direct Worker Network</span>
-              <span class="app-footer__pill">⚡ 0% Middleman Cut</span>
-              <span class="app-footer__pill">🟢 Live GPS Tracking</span>
+            <div class="app-footer__socials">
+              <span class="social-chip">🇮🇳 Made with Pride for India</span>
+              <span class="social-chip">⚡ 100% Commission-Free</span>
             </div>
           </div>
 
-          <div class="app-footer__nav-box">
-            <h4 class="app-footer__nav-title">Quick Navigation</h4>
-            <nav class="app-footer__nav-links">
-              <a href="#" onclick="showView('home')">
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 8l6-6 6 6M4 7v6h3v-4h2v4h3V7" stroke="currentColor" stroke-width="1.5"/></svg>
-                Home
-              </a>
-              <a href="#" onclick="showView('browse-workers')">
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.5"/></svg>
-                Find Workers
-              </a>
-              <a href="#" onclick="showToast('Privacy Policy: All worker & customer data secured in Supabase', 'info')">
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M5 7V4.5a3 3 0 016 0V7" stroke="currentColor" stroke-width="1.5"/></svg>
-                Privacy Policy
-              </a>
-              <a href="#" onclick="showToast('Terms of Service: Direct hiring platform rules apply', 'info')">
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 2h8a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.5"/><line x1="6" y1="5" x2="10" y2="5" stroke="currentColor" stroke-width="1.5"/><line x1="6" y1="8" x2="10" y2="8" stroke="currentColor" stroke-width="1.5"/></svg>
-                Terms of Service
-              </a>
-            </nav>
+          <div class="app-footer__col">
+            <h4>Popular Trades (सेवाएं)</h4>
+            <ul>
+              <li><a href="#" data-skill="Electrician">⚡ Electrician (इलेक्ट्रीशियन)</a></li>
+              <li><a href="#" data-skill="Plumber">🔧 Plumber (प्लंबर)</a></li>
+              <li><a href="#" data-skill="Mason">🧱 Mason (राजमिस्त्री)</a></li>
+              <li><a href="#" data-skill="Painter">🎨 Painter (पेंटर)</a></li>
+              <li><a href="#" data-skill="Carpenter">🪚 Carpenter (बढ़ई)</a></li>
+              <li><a href="#" data-skill="Welder">🔥 Welder (वेल्डर)</a></li>
+            </ul>
+          </div>
+
+          <div class="app-footer__col">
+            <h4>Quick Links (नेविगेशन)</h4>
+            <ul>
+              <li><a href="#" data-action="show-home">🏠 Home Page</a></li>
+              <li><a href="#" data-action="show-browse-workers">🔍 Browse All Workers</a></li>
+              <li><a href="#" data-action="show-labour-login">👷 Worker Sign In</a></li>
+              <li><a href="#" data-action="show-customer-login">🏠 Customer Sign In</a></li>
+              <li><a href="#" data-action="show-labour-register">⚡ Free Worker Registration</a></li>
+            </ul>
+          </div>
+
+          <div class="app-footer__col">
+            <h4>Help &amp; Support (सहायता)</h4>
+            <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 8px;">Direct Worker Helpline (टोल-फ्री):</p>
+            <div style="font-size: 1.1rem; font-weight: 700; color: var(--amber); margin-bottom: 12px;">📞 +91 1800-SETU-WORK</div>
+            <p style="color: var(--muted); font-size: 0.85rem;">Email Support: support@shramiksetu.in</p>
+            <div style="margin-top: 12px; font-size: 0.8rem; color: #10b981; display: flex; align-items: center; gap: 6px;">
+              <span class="status-dot"></span> System Live &amp; Operational
+            </div>
           </div>
         </div>
 
-        <div class="app-footer__bottom-bar">
+        <div class="app-footer__bottom">
           <p>© 2026 Shramik Setu (श्रमिक सेतु). All Rights Reserved. Empowering skilled workers across India.</p>
+          <div style="display: flex; gap: 16px; font-size: 0.8rem; color: var(--muted);">
+            <a href="#" onclick="showToast('Privacy Policy: All worker data secured in Supabase', 'info')" style="color: inherit; text-decoration: none;">Privacy Policy</a>
+            <a href="#" onclick="showToast('Terms of Service: Direct hiring platform rules apply', 'info')" style="color: inherit; text-decoration: none;">Terms of Service</a>
+            <a href="#" onclick="openAdminSecretModal()" style="color: inherit; text-decoration: none;">Admin Access 🛡️</a>
+          </div>
         </div>
       </footer>
     </div>

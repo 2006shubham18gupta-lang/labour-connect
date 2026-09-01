@@ -910,6 +910,101 @@ function showCustomerDashboard(customer) {
   renderLabourList();
   populateSkillFilter();
   updateStats();
+  renderCustomerBookings();
+}
+
+// Render the customer's bookings with full worker details
+function renderCustomerBookings() {
+  const bookingsContainer = document.getElementById('customer-bookings-list');
+  if (!bookingsContainer) return;
+
+  const customerId = state.currentUser ? state.currentUser.id : null;
+  if (!customerId) return;
+
+  const myBookings = state.bookings.filter(b => b.customer_id === customerId);
+
+  bookingsContainer.innerHTML = '';
+
+  if (myBookings.length === 0) {
+    bookingsContainer.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state__icon">📋</div>
+        <h3>No bookings yet</h3>
+        <p>When you hire a worker, your booking details will appear here with full worker contact info!</p>
+      </div>
+    `;
+    return;
+  }
+
+  myBookings.forEach(booking => {
+    const card = document.createElement('div');
+    card.className = 'booking-card';
+
+    // Find the worker details
+    const worker = state.workers.find(w => w.id === booking.worker_id);
+    const workerName = worker ? worker.name : 'Worker';
+    const workerPhone = worker ? worker.phone : '';
+    const workerEmail = worker ? worker.email : '';
+    const workerSkill = worker ? worker.skill : 'Skilled Worker';
+    const workerLocation = worker ? worker.location : '';
+    const workerPhoto = worker ? worker.photo : '';
+    const workerRating = worker ? (worker.rating || '5.0') : '5.0';
+    const workerInitials = workerName.replace(/\(.*?\)/g, '').trim().split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+
+    const statusBadge = booking.status === 'accepted'
+      ? `<span class="badge-approved">✅ Accepted</span>`
+      : booking.status === 'rejected'
+      ? `<span class="badge-rejected">❌ Rejected</span>`
+      : `<span class="badge-pending">⏳ Pending</span>`;
+
+    // Parse job details from notes
+    const notesStr = booking.notes || '';
+    const jobTitle = notesStr.split('|')[0]?.trim() || 'Job Booking';
+    const jobLocation = extractField(notesStr, 'Location') || '';
+
+    const skillIcons = {
+      'Electrician': '⚡', 'Plumber': '🔧', 'Carpenter': '🪚', 'Mason': '🧱',
+      'Painter': '🎨', 'Welder': '🔥', 'AC Repair': '❄️', 'Mechanic': '🔩',
+      'Driver': '🚗', 'Gardener': '🌿', 'Cleaner': '🧹', 'Security Guard': '🛡️',
+      'Construction Worker': '🏗️',
+    };
+    const skillIcon = skillIcons[workerSkill] || '👷';
+
+    card.innerHTML = `
+      <div class="booking-card__header">
+        <div class="booking-card__worker-avatar">
+          ${workerPhoto ? `<img src="${workerPhoto}" alt="${workerName}" />` : `<span>${workerInitials}</span>`}
+        </div>
+        <div class="booking-card__worker-info">
+          <h4 class="booking-card__worker-name">${workerName}</h4>
+          <div class="booking-card__worker-skill">${skillIcon} ${workerSkill} • ⭐ ${workerRating}</div>
+        </div>
+        ${statusBadge}
+      </div>
+
+      <div class="booking-card__details">
+        <div class="booking-card__detail"><span>📋</span><strong>Job:</strong> ${jobTitle}</div>
+        <div class="booking-card__detail"><span>📅</span><strong>Date:</strong> ${booking.booking_date || 'Immediate'}</div>
+        <div class="booking-card__detail"><span>💰</span><strong>Rate:</strong> ₹${booking.daily_wage || 0}/day</div>
+        ${jobLocation ? `<div class="booking-card__detail"><span>📍</span><strong>Location:</strong> ${jobLocation}</div>` : ''}
+        ${workerLocation ? `<div class="booking-card__detail"><span>🏠</span><strong>Worker Area:</strong> ${workerLocation}</div>` : ''}
+      </div>
+
+      <div class="booking-card__worker-contact">
+        <div class="booking-card__contact-label">📞 Worker Contact Details (मज़दूर संपर्क)</div>
+        ${workerPhone ? `<div class="booking-card__detail"><span>📱</span><strong>Phone:</strong> <a href="tel:${workerPhone}" class="booking-card__link">${workerPhone}</a></div>` : ''}
+        ${workerEmail ? `<div class="booking-card__detail"><span>✉️</span><strong>Email:</strong> ${workerEmail}</div>` : ''}
+      </div>
+
+      <div class="booking-card__actions">
+        ${workerPhone ? `
+          <a href="tel:${workerPhone}" class="booking-card__btn booking-card__btn--call">📞 Call Worker</a>
+          <a href="https://wa.me/${workerPhone.replace(/[^0-9]/g, '')}" target="_blank" class="booking-card__btn booking-card__btn--whatsapp">💬 WhatsApp</a>
+        ` : ''}
+      </div>
+    `;
+    bookingsContainer.appendChild(card);
+  });
 }
 
 async function handleProfileUpdate(e) {
@@ -1041,6 +1136,23 @@ async function handleHireSubmit(e) {
   const notes = formData.get('notes') || '';
 
   const customerId = state.currentUser.id;
+  const customerName = state.currentUser.full_name || state.currentUser.name || 'Customer';
+  const customerPhone = state.currentUser.phone || '';
+
+  // Get customer address from customer_profiles
+  let customerAddress = location; // fallback to job location
+  try {
+    const { data: cpData } = await supabaseClient
+      .from('customer_profiles')
+      .select('address')
+      .eq('user_id', customerId)
+      .single();
+    if (cpData && cpData.address) {
+      customerAddress = cpData.address;
+    }
+  } catch (err) {
+    console.warn('Could not fetch customer address:', err);
+  }
 
   try {
     const { error } = await supabaseClient
@@ -1050,7 +1162,7 @@ async function handleHireSubmit(e) {
         customer_id: customerId,
         daily_wage: state.selectedWorkerForHire.cost,
         booking_date: bookingDate,
-        notes: `${title} | Location: ${location} | Notes: ${notes}`,
+        notes: `${title} | Location: ${location} | Notes: ${notes} | CustomerName: ${customerName} | CustomerPhone: ${customerPhone} | CustomerAddress: ${customerAddress}`,
         status: 'pending'
       }]);
 
@@ -1092,28 +1204,68 @@ function renderLabourJobRequests() {
     const card = document.createElement('div');
     card.className = 'request-card';
     const statusBadge = req.status === 'accepted'
-      ? `<span class="badge-approved">Accepted</span>`
+      ? `<span class="badge-approved">Accepted ✅</span>`
       : req.status === 'rejected'
       ? `<span class="badge-rejected">Rejected</span>`
       : `<span class="badge-pending">Pending Request</span>`;
 
+    // Parse customer details from notes
+    const notesStr = req.notes || '';
+    const customerName = extractField(notesStr, 'CustomerName') || 'Customer';
+    const customerPhone = extractField(notesStr, 'CustomerPhone') || '';
+    const customerAddress = extractField(notesStr, 'CustomerAddress') || '';
+    const jobLocation = extractField(notesStr, 'Location') || '';
+    const jobTitle = notesStr.split('|')[0]?.trim() || 'Direct Job Booking';
+    const jobNotes = extractField(notesStr, 'Notes') || '';
+
+    // Also try to find customer from users list for extra info
+    const customerUser = state.users.find(u => u.id === req.customer_id);
+    const displayName = customerName !== 'Customer' ? customerName : (customerUser?.full_name || 'Customer');
+    const displayPhone = customerPhone || customerUser?.phone || '';
+
     card.innerHTML = `
       <div class="request-card__header">
-        <h4 class="request-card__title">Direct Job Booking</h4>
+        <h4 class="request-card__title">📋 ${jobTitle}</h4>
         ${statusBadge}
       </div>
-      <div><strong>Date:</strong> ${req.booking_date || 'Immediate'}</div>
-      <div><strong>Details:</strong> ${req.notes || 'No extra notes provided'}</div>
-      <div><strong>Daily Rate:</strong> ₹${req.daily_wage || 0}/day</div>
+
+      <div class="request-card__customer-info">
+        <div class="request-card__customer-label">👤 Customer Details (ग्राहक की जानकारी)</div>
+        <div class="request-card__detail"><span class="request-card__detail-icon">👤</span><strong>Name:</strong> ${displayName}</div>
+        <div class="request-card__detail"><span class="request-card__detail-icon">📱</span><strong>Phone:</strong> ${displayPhone ? `<a href="tel:${displayPhone}" class="request-card__link">${displayPhone}</a>` : 'Not provided'}</div>
+        <div class="request-card__detail"><span class="request-card__detail-icon">📍</span><strong>Address:</strong> ${customerAddress || 'Not provided'}</div>
+        <div class="request-card__detail"><span class="request-card__detail-icon">🏗️</span><strong>Work Site:</strong> ${jobLocation || customerAddress || 'Not specified'}</div>
+      </div>
+
+      <div class="request-card__job-info">
+        <div><strong>📅 Date:</strong> ${req.booking_date || 'Immediate'}</div>
+        <div><strong>💰 Daily Rate:</strong> ₹${req.daily_wage || 0}/day</div>
+        ${jobNotes ? `<div><strong>📝 Notes:</strong> ${jobNotes}</div>` : ''}
+      </div>
+
+      ${displayPhone ? `
+        <div class="request-card__contact-actions">
+          <a href="tel:${displayPhone}" class="request-card__contact-btn request-card__contact-btn--call">📞 Call Customer</a>
+          <a href="https://wa.me/${displayPhone.replace(/[^0-9]/g, '')}" target="_blank" class="request-card__contact-btn request-card__contact-btn--whatsapp">💬 WhatsApp</a>
+        </div>
+      ` : ''}
+
       ${req.status === 'pending' ? `
         <div class="request-card__actions">
-          <button class="btn-accept" onclick="updateBookingStatus('${req.id}', 'accepted')">Accept Job ✓</button>
-          <button class="btn-reject" onclick="updateBookingStatus('${req.id}', 'rejected')">Reject ✕</button>
+          <button class="btn-accept" onclick="updateBookingStatus('${req.id}', 'accepted')">✅ Accept Job</button>
+          <button class="btn-reject" onclick="updateBookingStatus('${req.id}', 'rejected')">❌ Reject</button>
         </div>
       ` : ''}
     `;
     elements.labourRequestsList.appendChild(card);
   });
+}
+
+// Helper to extract field from notes string like "... | FieldName: value | ..."
+function extractField(notesStr, fieldName) {
+  const regex = new RegExp(fieldName + ':\\s*([^|]*)', 'i');
+  const match = notesStr.match(regex);
+  return match ? match[1].trim() : '';
 }
 
 window.updateBookingStatus = async function(bookingId, newStatus) {
