@@ -119,7 +119,7 @@ const LiveMap = (function () {
           <div class="map-marker-pin__avatar">
             ${avatarInner}
           </div>
-          ${isOnline ? `<div class="map-marker-pin__pulse-ring"></div>` : ''}
+          ${isOnline ? `<div class="map-marker-pin__pulse-ring"></div><div class="map-marker-pin__pulse-ring map-marker-pin__pulse-ring--delayed"></div>` : ''}
           <div class="map-marker-pin__pointer map-marker-pin__pointer--${roleInfo.key}"></div>
         </div>
       </div>
@@ -668,8 +668,8 @@ const LiveMap = (function () {
     // Initial View fit India
     _map.fitBounds(INDIA_BOUNDS);
 
-    // Clean Dark CartoDB basemap with high readability labels
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png', {
+    // Dark CartoDB basemap for futuristic radar aesthetic
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
       maxZoom: 19,
       subdomains: 'abcd',
@@ -680,6 +680,33 @@ const LiveMap = (function () {
     _subscribeRealtime();
     _startPolling();
     _startOfflineCheck();
+
+    // ── Radar HUD Live Updates ────────────────────────────
+    // Real-time clock
+    function _updateRadarClock() {
+      const el = document.getElementById('radar-hud-time');
+      if (el) {
+        const now = new Date();
+        el.textContent = now.toLocaleTimeString('en-IN', { hour12: false });
+      }
+    }
+    _updateRadarClock();
+    setInterval(_updateRadarClock, 1000);
+
+    // Zoom level display
+    _map.on('zoomend', () => {
+      const zoomEl = document.getElementById('radar-hud-zoom');
+      if (zoomEl) zoomEl.textContent = `ZOOM: ${_map.getZoom()}x`;
+    });
+
+    // Center coordinates display
+    _map.on('moveend', () => {
+      const center = _map.getCenter();
+      const latEl = document.getElementById('radar-hud-lat');
+      const lngEl = document.getElementById('radar-hud-lng');
+      if (latEl) latEl.textContent = center.lat.toFixed(4);
+      if (lngEl) lngEl.textContent = center.lng.toFixed(4);
+    });
 
     _isInitialized = true;
     console.log('[LiveMap] 🗺️ Professional Live Map Ready');
