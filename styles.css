@@ -4468,6 +4468,60 @@ input:focus, textarea:focus, select:focus {
   }
 }
 
+/* ── Leaflet Layer Control (Map Mode Switcher) Dark Theme ── */
+.radar-map-frame .leaflet-control-layers {
+  background: rgba(6, 12, 28, 0.95) !important;
+  border: 1px solid rgba(0, 255, 136, 0.2) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 255, 136, 0.05) !important;
+  color: #e2e8f0 !important;
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.radar-map-frame .leaflet-control-layers-toggle {
+  width: 36px !important;
+  height: 36px !important;
+  background-size: 20px 20px !important;
+  background-color: rgba(6, 12, 28, 0.95) !important;
+  border-radius: 10px !important;
+  border: 1px solid rgba(0, 255, 136, 0.2) !important;
+  filter: invert(1) hue-rotate(90deg) brightness(1.4);
+}
+
+.radar-map-frame .leaflet-control-layers-expanded {
+  padding: 10px 14px !important;
+  min-width: 200px;
+}
+
+.radar-map-frame .leaflet-control-layers-base label {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  margin: 2px 0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #cbd5e1;
+}
+
+.radar-map-frame .leaflet-control-layers-base label:hover {
+  background: rgba(0, 255, 136, 0.08);
+  color: #00ff88;
+}
+
+.radar-map-frame .leaflet-control-layers-base label span {
+  color: inherit;
+}
+
+.radar-map-frame .leaflet-control-layers-separator {
+  border-top: 1px solid rgba(0, 255, 136, 0.1) !important;
+  margin: 4px 0 !important;
+}
+
 /* ============================================================
    PREMIUM UI/UX ENHANCEMENTS — TESTIMONIALS, FAQS, APP BANNER & FOOTER
    ============================================================ */

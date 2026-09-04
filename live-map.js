@@ -668,11 +668,45 @@ const LiveMap = (function () {
     // Initial View fit India
     _map.fitBounds(INDIA_BOUNDS);
 
-    // Dark CartoDB basemap for futuristic radar aesthetic
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
+    // ── Multiple Map Tile Layers (Map Modes like Google Maps) ──
+    // Standard — OpenStreetMap (shows roads, shops, places, traffic)
+    const osmStandard = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       maxZoom: 19,
-      subdomains: 'abcd',
+    });
+
+    // Satellite — ESRI World Imagery (free satellite view)
+    const esriSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: '&copy; Esri, Maxar, Earthstar Geographics',
+      maxZoom: 18,
+    });
+
+    // Terrain — OpenTopoMap (topographic with elevation)
+    const topoMap = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
+      maxZoom: 17,
+    });
+
+    // Dark Mode — OSM dark tiles via Stadia
+    const darkMode = L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a> &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>',
+      maxZoom: 20,
+    });
+
+    // Default: Standard OSM (shows places, shops, roads, everything)
+    osmStandard.addTo(_map);
+
+    // Map Mode Switcher Control
+    const baseLayers = {
+      '🗺️ Standard (Places & Roads)': osmStandard,
+      '🛰️ Satellite View': esriSatellite,
+      '⛰️ Terrain / Topographic': topoMap,
+      '🌙 Dark Mode': darkMode,
+    };
+
+    L.control.layers(baseLayers, null, {
+      position: 'topright',
+      collapsed: true,
     }).addTo(_map);
 
     _setupFilterListeners();
@@ -706,6 +740,18 @@ const LiveMap = (function () {
       const lngEl = document.getElementById('radar-hud-lng');
       if (latEl) latEl.textContent = center.lat.toFixed(4);
       if (lngEl) lngEl.textContent = center.lng.toFixed(4);
+    });
+
+    // Map mode change display
+    const modeNames = {
+      '🗺️ Standard (Places & Roads)': 'STANDARD',
+      '🛰️ Satellite View': 'SATELLITE',
+      '⛰️ Terrain / Topographic': 'TERRAIN',
+      '🌙 Dark Mode': 'DARK',
+    };
+    _map.on('baselayerchange', (e) => {
+      const modeEl = document.getElementById('radar-hud-mode');
+      if (modeEl) modeEl.textContent = modeNames[e.name] || e.name;
     });
 
     _isInitialized = true;
