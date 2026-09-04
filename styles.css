@@ -4522,6 +4522,66 @@ input:focus, textarea:focus, select:focus {
   margin: 4px 0 !important;
 }
 
+/* ── Radar Cluster Icons (Anti-Overlap) ────────────────────── */
+.radar-cluster-wrapper {
+  background: none !important;
+  border: none !important;
+}
+
+.radar-cluster {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(6, 12, 28, 0.92);
+  border: 2px solid #00ff88;
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.5), inset 0 0 10px rgba(0, 255, 136, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: #00ff88;
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.radar-cluster::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(0, 255, 136, 0.4);
+  animation: pulseHalo 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+  pointer-events: none;
+}
+
+.radar-cluster:hover {
+  transform: scale(1.12);
+  box-shadow: 0 0 25px rgba(0, 255, 136, 0.8);
+}
+
+.radar-cluster--md {
+  border-color: #f59e0b;
+  color: #f59e0b;
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.5), inset 0 0 10px rgba(245, 158, 11, 0.2);
+}
+
+.radar-cluster--md::before {
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
+.radar-cluster--lg {
+  border-color: #3b82f6;
+  color: #60a5fa;
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.6), inset 0 0 12px rgba(59, 130, 246, 0.3);
+}
+
+.radar-cluster--lg::before {
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
 /* ============================================================
    PREMIUM UI/UX ENHANCEMENTS — TESTIMONIALS, FAQS, APP BANNER & FOOTER
    ============================================================ */

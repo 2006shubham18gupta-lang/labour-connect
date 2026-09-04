@@ -23,6 +23,7 @@ const LiveMap = (function () {
   let _markers = {};          // userId -> L.marker
   let _locationData = {};     // userId -> location data row
   let _userData = {};         // userId -> user & profile metadata
+  let _clusterGroup = null;   // MarkerClusterGroup for anti-overlap
   let _realtimeChannel = null;
   let _offlineCheckInterval = null;
   let _pollInterval = null;
@@ -93,6 +94,7 @@ const LiveMap = (function () {
   }
 
   // ── Marker Icon Generator ──────────────────────────────────
+  // Compact pin with precise anchor at exact lat/lng
   function _createMarkerIcon(role, isOnline, userObj) {
     const roleInfo = _getRoleDetails(role, isOnline);
     const photo = userObj?.photo || '';
@@ -107,7 +109,9 @@ const LiveMap = (function () {
       ? `<img src="${photo}" alt="${name}" class="map-marker-pin__img" />`
       : `<span class="map-marker-pin__initials">${initials || iconSymbol}</span>`;
 
-    // High-readability floating card tag + pin stem pointer
+    // Compact pin: circle avatar + pointer tip at exact bottom
+    // Total height: tag(24) + gap(4) + pin(42) + pointer(8) = 78px
+    // Total width: max(tag, pin) = ~160px for tag, pin is centered
     const pinHtml = `
       <div class="map-marker-card map-marker-card--${roleInfo.key} ${isOnline ? 'is-online' : 'is-offline'}">
         <div class="map-marker-card__tag">
@@ -125,12 +129,14 @@ const LiveMap = (function () {
       </div>
     `;
 
+    // iconSize: width=160 to fit tag, height=78 for full pin structure
+    // iconAnchor: center-x=80, bottom-y=78 (pointer tip touches exact coordinate)
     return L.divIcon({
       className: `map-marker-wrapper map-marker-wrapper--${roleInfo.key}`,
       html: pinHtml,
-      iconSize: [180, 68],
-      iconAnchor: [90, 64],
-      popupAnchor: [0, -68],
+      iconSize: [160, 78],
+      iconAnchor: [80, 78],
+      popupAnchor: [0, -78],
     });
   }
 
@@ -335,7 +341,8 @@ const LiveMap = (function () {
     // Filter out marker if hidden
     if (!shouldShow) {
       if (_markers[userId]) {
-        _map.removeLayer(_markers[userId]);
+        if (_clusterGroup) _clusterGroup.removeLayer(_markers[userId]);
+        else _map.removeLayer(_markers[userId]);
         delete _markers[userId];
       }
       return;
@@ -350,13 +357,18 @@ const LiveMap = (function () {
       _markers[userId].setIcon(icon);
       _markers[userId].setPopupContent(popupContent);
     } else {
-      // Create new marker instance
+      // Create new marker instance — add to cluster group (not map directly)
       const marker = L.marker([loc.latitude, loc.longitude], { icon })
-        .addTo(_map)
         .bindPopup(popupContent, {
           maxWidth: 320,
           className: 'live-map-popup-wrapper',
         });
+
+      if (_clusterGroup) {
+        _clusterGroup.addLayer(marker);
+      } else {
+        marker.addTo(_map);
+      }
 
       _markers[userId] = marker;
     }
@@ -665,6 +677,29 @@ const LiveMap = (function () {
     // Custom Zoom Controls top-right
     L.control.zoom({ position: 'topright' }).addTo(_map);
 
+    // Initialize MarkerCluster Group for anti-overlap
+    _clusterGroup = L.markerClusterGroup({
+      spiderfyOnMaxZoom: true,
+      showCoverageOnHover: true,
+      zoomToBoundsOnClick: true,
+      maxClusterRadius: 45,
+      disableClusteringAtZoom: 16,
+      spiderfyDistanceMultiplier: 1.8,
+      iconCreateFunction: function(cluster) {
+        const count = cluster.getChildCount();
+        let sizeClass = 'radar-cluster--sm';
+        if (count >= 10) sizeClass = 'radar-cluster--lg';
+        else if (count >= 5) sizeClass = 'radar-cluster--md';
+        return L.divIcon({
+          html: `<div class="radar-cluster ${sizeClass}"><span>${count}</span></div>`,
+          className: 'radar-cluster-wrapper',
+          iconSize: [44, 44],
+          iconAnchor: [22, 22],
+        });
+      }
+    });
+    _map.addLayer(_clusterGroup);
+
     // Initial View fit India
     _map.fitBounds(INDIA_BOUNDS);
 
@@ -771,6 +806,11 @@ const LiveMap = (function () {
     if (_pollInterval) {
       clearInterval(_pollInterval);
       _pollInterval = null;
+    }
+
+    if (_clusterGroup) {
+      _clusterGroup.clearLayers();
+      _clusterGroup = null;
     }
 
     Object.values(_markers).forEach(marker => {
