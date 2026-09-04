@@ -3,7 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Shramik Setu — Skilled Worker & Workforce Platform</title>
+    <title>Shramik Setu — Skilled Worker & Workforce Marketplace</title>
+    <meta name="description" content="Shramik Setu connects customers directly with verified skilled workers: Electricians, Plumbers, Masons, Painters, Carpenters, Welders & Daily Wage Workers. Zero middleman fees." />
     <link rel="manifest" href="./manifest.json" />
     <meta name="theme-color" content="#f59e0b" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -11,7 +12,7 @@
     <meta name="apple-mobile-web-app-title" content="Shramik Setu" />
     <link rel="icon" type="image/png" href="./assets/logo.png" />
     <link rel="apple-touch-icon" href="./assets/logo.png" />
-    <!-- Modern Typography Google Fonts & Lucide Icons -->
+    <!-- Modern Typography & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet">
@@ -31,8 +32,14 @@
               <h1>Shramik Setu</h1>
               <span class="brand__tag-badge">श्रमिक सेतु</span>
             </div>
-            <p class="brand__eyebrow">Direct Skilled Workforce Platform</p>
+            <p class="brand__eyebrow">Skilled Worker Marketplace</p>
           </div>
+        </div>
+
+        <!-- Location Badge in Header -->
+        <div class="topbar__location-chip" id="topbar-location-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span id="header-location-text">Direct Local Hiring</span>
         </div>
 
         <nav class="topbar__nav">
@@ -46,9 +53,19 @@
             Find Workers
           </button>
 
+          <button class="nav-link" data-action="scroll-categories">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            Categories
+          </button>
+
+          <button class="nav-link" data-action="scroll-how-it-works">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+            How It Works
+          </button>
+
           <div class="nav-divider"></div>
 
-          <!-- Guest State: Show Login & Register buttons when NOT logged in -->
+          <!-- Guest State -->
           <div class="topbar__auth-guest" id="topbar-auth-guest">
             <button class="nav-link nav-link--labour" data-action="show-labour-login">
               <span class="nav-link__icon">👷</span>
@@ -66,7 +83,7 @@
             </button>
           </div>
 
-          <!-- Logged-In User State: Shown when a user is logged in -->
+          <!-- Logged-In User State -->
           <div class="topbar__auth-user hidden" id="topbar-auth-user">
             <div class="topbar__user-chip" id="topbar-user-chip">
               <div class="topbar__user-avatar" id="topbar-user-avatar">U</div>
@@ -99,25 +116,25 @@
           <div class="hero__content-v2">
             <div class="hero__badge-v2">
               <span class="hero__badge-dot"></span>
-              <span class="hero__badge-text">🇮🇳 100% Direct Worker Connection • No Agent Commission</span>
+              <span class="hero__badge-text">Direct Skilled Worker Connection • No Middleman Fees</span>
             </div>
             
             <h1 class="hero__title-v2">
-              Find Skilled <span class="hero__title-highlight">Workers</span> Nearby or Get <span class="hero__title-gold">Daily Work</span> Direct
+              Find Skilled <span class="hero__title-highlight">Workers</span> Near You
             </h1>
             
             <p class="hero__desc-v2">
-              Connect directly with verified Masons, Electricians, Plumbers, Painters, Carpenters, Welders & Daily Wage Workers. Zero middleman fees, instant WhatsApp/Call connection, and transparent daily rates.
+              Connect directly with skilled workers for your work needs.
             </p>
 
             <div class="hero__actions-v2">
-              <button class="button-v2 button-v2--primary" data-action="show-labour-register">
-                <span>👷 Register as Skilled Worker</span>
+              <button class="button-v2 button-v2--primary" data-action="show-browse-workers">
+                <span>🔍 Find Workers</span>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
               </button>
 
-              <button class="button-v2 button-v2--secondary" data-action="show-browse-workers">
-                <span>🔍 Hire Workers Nearby</span>
+              <button class="button-v2 button-v2--secondary" data-action="scroll-categories">
+                <span>🗂️ Browse Categories</span>
               </button>
             </div>
 
@@ -142,33 +159,33 @@
                 <span class="hero__graphic-dot"></span>
                 <span class="hero__graphic-dot"></span>
                 <span class="hero__graphic-dot"></span>
-                <span class="hero__graphic-title">Shramik Setu • Verified Workforce</span>
+                <span class="hero__graphic-title">Shramik Setu • Direct Workforce</span>
               </div>
               
               <img src="./assets/hero-graphic.png" alt="Shramik Setu Skilled Workers Illustration" class="hero__graphic-img" />
 
-              <!-- Floating UI Badges -->
+              <!-- Floating Badges -->
               <div class="hero__floating-badge hero__floating-badge--left">
                 <div class="badge-icon">✅</div>
                 <div class="badge-text">
                   <strong>Aadhaar Verified</strong>
-                  <span>Trusted & Local</span>
+                  <span>Trusted Local Workers</span>
                 </div>
               </div>
 
               <div class="hero__floating-badge hero__floating-badge--right">
                 <div class="badge-icon">💰</div>
                 <div class="badge-text">
-                  <strong>₹500 - ₹2000/day</strong>
-                  <span>Transparent Wages</span>
+                  <strong>Transparent Wages</strong>
+                  <span>Direct Daily Rates</span>
                 </div>
               </div>
 
               <div class="hero__floating-badge hero__floating-badge--bottom">
                 <div class="badge-icon">⚡</div>
                 <div class="badge-text">
-                  <strong>Direct Call & WhatsApp</strong>
-                  <span>Instant Booking</span>
+                  <strong>Direct Call &amp; WhatsApp</strong>
+                  <span>Instant Connection</span>
                 </div>
               </div>
             </div>
@@ -183,14 +200,14 @@
                 <span class="login-page__icon">👷</span>
               </div>
               <h2>Worker Login (कामगार लॉगिन)</h2>
-              <p>Sign in to update your daily availability, skills, and phone number</p>
+              <p>Sign in to update your daily availability, trade skills, and contact details</p>
             </div>
             <form class="login-page__form" id="labour-login-form">
               <div class="login-page__field">
-                <label for="labour-login-username">Username</label>
+                <label for="labour-login-username">Username / Email / Name / Phone</label>
                 <div class="login-page__input-wrap">
                   <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 9a3.5 3.5 0 100-7 3.5 3.5 0 000 7zM2 16c0-2.5 3.1-4.5 7-4.5s7 2 7 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-                  <input type="text" id="labour-login-username" name="username" placeholder="e.g. raju_worker" autocomplete="username" required />
+                  <input type="text" id="labour-login-username" name="username" placeholder="e.g. raju_worker or email" autocomplete="username" required />
                 </div>
               </div>
               <div class="login-page__field">
@@ -203,7 +220,7 @@
               <button type="submit" class="login-page__btn login-page__btn--worker">Sign In as Worker →</button>
             </form>
             <div class="login-page__footer">
-              Don't have a worker profile yet? <a href="#" data-action="show-labour-register">Register as Worker (मुफ्त रजिस्ट्रेशन) →</a>
+              Don't have a worker profile yet? <a href="#" data-action="show-labour-register">Register as Worker →</a>
             </div>
           </div>
           <div class="login-page__decoration">
@@ -221,14 +238,14 @@
                 <span class="login-page__icon">🏠</span>
               </div>
               <h2>Customer Login (ग्राहक लॉगिन)</h2>
-              <p>Sign in to browse, compare rates, and contact skilled workers directly</p>
+              <p>Sign in to find, compare, and contact skilled workers directly</p>
             </div>
             <form class="login-page__form" id="customer-login-form">
               <div class="login-page__field">
-                <label for="customer-login-username">Username</label>
+                <label for="customer-login-username">Username / Email / Name / Phone</label>
                 <div class="login-page__input-wrap">
                   <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 9a3.5 3.5 0 100-7 3.5 3.5 0 000 7zM2 16c0-2.5 3.1-4.5 7-4.5s7 2 7 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-                  <input type="text" id="customer-login-username" name="username" placeholder="e.g. customer" autocomplete="username" required />
+                  <input type="text" id="customer-login-username" name="username" placeholder="e.g. customer or email" autocomplete="username" required />
                 </div>
               </div>
               <div class="login-page__field">
@@ -259,7 +276,7 @@
                 <span class="login-page__icon">👷</span>
               </div>
               <h2>Register as Skilled Worker (कामगार पंजीकरण)</h2>
-              <p>Create your free worker card, set your daily rate (दहाड़ी), and get direct calls from customers!</p>
+              <p>Create your worker card, set your daily rate (दहाड़ी), and get direct calls from customers!</p>
             </div>
             <form class="login-page__form" id="labour-register-form">
               <div class="register-page__grid">
@@ -288,22 +305,22 @@
                   </div>
                 </div>
                 <div class="login-page__field">
-                  <label for="reg-labour-skill">Primary Skill (आपका कार्य / हुनर)</label>
+                  <label for="reg-labour-skill">Primary Trade / Skill (आपका कार्य)</label>
                   <select id="reg-labour-skill" name="skill" class="login-page__select" required>
-                    <option value="">Select primary trade / skill</option>
+                    <option value="">Select trade / skill</option>
                     <option value="Electrician">⚡ Electrician (इलेक्ट्रीशियन)</option>
                     <option value="Plumber">🔧 Plumber (प्लंबर)</option>
-                    <option value="Carpenter">🪚 Carpenter (बढ़ई / कारपेंटर)</option>
+                    <option value="Carpenter">🪚 Carpenter (बढ़ई)</option>
                     <option value="Mason">🧱 Mason (राजमिस्त्री)</option>
-                    <option value="Painter">🎨 Painter (पेंटर / पुताई वाला)</option>
+                    <option value="Painter">🎨 Painter (पेंटर)</option>
                     <option value="Welder">🔥 Welder (वेल्डर)</option>
                     <option value="AC Repair">❄️ AC Repair & Service</option>
-                    <option value="Mechanic">🔩 Vehicle Mechanic</option>
-                    <option value="Driver">🚗 Driver (ड्राइवर)</option>
-                    <option value="Gardener">🌿 Gardener (माली)</option>
+                    <option value="Mechanic">🔩 Mechanic</option>
+                    <option value="Driver">🚗 Driver</option>
+                    <option value="Gardener">🌿 Gardener</option>
                     <option value="Cleaner">🧹 Home & Site Cleaner</option>
                     <option value="Security Guard">🛡️ Security Guard</option>
-                    <option value="Construction Worker">🏗️ Construction & Laborer</option>
+                    <option value="Construction Worker">🏗️ Construction Labour</option>
                   </select>
                 </div>
               </div>
@@ -320,7 +337,7 @@
                   <label for="reg-labour-cost">Daily Wage Rate (दहाड़ी ₹/दिन)</label>
                   <div class="login-page__input-wrap">
                     <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 2v14M5 5h7a2 2 0 010 4H6M6 9h6a2 2 0 010 4H5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-                    <input type="number" id="reg-labour-cost" name="cost" placeholder="900" min="100" step="50" required />
+                    <input type="number" id="reg-labour-cost" name="cost" placeholder="800" min="100" step="50" required />
                   </div>
                 </div>
               </div>
@@ -343,16 +360,16 @@
               </div>
 
               <div class="login-page__field">
-                <label for="reg-labour-photo">Profile Photo / Work Photo (फोटो शेयर करें)</label>
+                <label for="reg-labour-photo">Profile Photo / Work Photo</label>
                 <input type="file" id="reg-labour-photo" name="photo" accept="image/*" class="register-file-input" />
               </div>
 
               <div class="login-page__field">
-                <label for="reg-labour-about">Work Experience & Details (अनुभव की जानकारी)</label>
-                <textarea id="reg-labour-about" name="about" rows="3" placeholder="Describe your experience, tools you bring, past site projects..." class="login-page__textarea"></textarea>
+                <label for="reg-labour-about">Work Experience &amp; Skills Description</label>
+                <textarea id="reg-labour-about" name="about" rows="3" placeholder="Describe your trade experience, past projects, tools you bring..." class="login-page__textarea"></textarea>
               </div>
 
-              <button type="submit" class="login-page__btn login-page__btn--worker">Create Free Worker Account →</button>
+              <button type="submit" class="login-page__btn login-page__btn--worker">Create Worker Account →</button>
             </form>
             <div class="login-page__footer">
               Already registered? <a href="#" data-action="show-labour-login">Sign In to Worker Account →</a>
@@ -373,7 +390,7 @@
                 <span class="login-page__icon">🏠</span>
               </div>
               <h2>Register as Customer (ग्राहक पंजीकरण)</h2>
-              <p>Create your account to find, review, and directly contact skilled workers near you</p>
+              <p>Create your account to find, compare, and contact skilled workers near you</p>
             </div>
             <form class="login-page__form" id="customer-register-form">
               <div class="register-page__grid">
@@ -415,7 +432,7 @@
                   <label for="reg-customer-address">City / Location</label>
                   <div class="login-page__input-wrap">
                     <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 16s-6-5.3-6-9a6 6 0 0112 0c0 3.7-6 9-6 9z" stroke="currentColor" stroke-width="1.5"/><circle cx="9" cy="7" r="2" stroke="currentColor" stroke-width="1.5"/></svg>
-                    <input type="text" id="reg-customer-address" name="address" placeholder="e.g. Mumbai, Andheri" autocomplete="street-address" required />
+                    <input type="text" id="reg-customer-address" name="address" placeholder="e.g. Pune, Kothrud" autocomplete="street-address" required />
                   </div>
                 </div>
                 <div class="login-page__field">
@@ -439,15 +456,15 @@
           </div>
         </section>
 
-        <!-- Landing Page Rich Sections (Visible only on home) -->
+        <!-- Landing Page Rich Sections (Visible on Home) -->
         <div id="landing-sections">
 
-          <!-- Popular Trade Categories Section -->
+          <!-- Popular Work Categories Section -->
           <section class="section-block" id="categories-section">
             <div class="section-block__label">
-              <span class="section-block__badge section-block__badge--gold">Popular Trades • लोकप्रिय सेवाएँ</span>
-              <h2 class="section-block__title">Browse Workers by Trade &amp; Skill</h2>
-              <p class="section-block__subtitle">Find specialized skilled workers in your city with fixed, transparent daily wages</p>
+              <span class="section-block__badge section-block__badge--gold">Popular Trades</span>
+              <h2 class="section-block__title">Popular Work Categories</h2>
+              <p class="section-block__subtitle">Choose the type of worker you need.</p>
             </div>
 
             <div class="trade-grid" id="trade-categories-grid">
@@ -457,7 +474,7 @@
                 <span class="trade-card__sub">इलेक्ट्रीशियन</span>
                 <p>Wiring, MCB fitting, light fixtures &amp; appliance repair</p>
                 <div class="trade-card__footer">
-                  <span class="trade-card__rate">From ₹700/day</span>
+                  <span class="trade-card__count" id="cat-count-Electrician"></span>
                   <span class="trade-card__arrow">→</span>
                 </div>
               </div>
@@ -468,7 +485,7 @@
                 <span class="trade-card__sub">प्लंबर</span>
                 <p>Pipe fitting, leakage fix, taps &amp; bathroom installations</p>
                 <div class="trade-card__footer">
-                  <span class="trade-card__rate">From ₹800/day</span>
+                  <span class="trade-card__count" id="cat-count-Plumber"></span>
                   <span class="trade-card__arrow">→</span>
                 </div>
               </div>
@@ -479,7 +496,7 @@
                 <span class="trade-card__sub">राजमिस्त्री</span>
                 <p>Brickwork, tiling, concrete construction &amp; plastering</p>
                 <div class="trade-card__footer">
-                  <span class="trade-card__rate">From ₹1000/day</span>
+                  <span class="trade-card__count" id="cat-count-Mason"></span>
                   <span class="trade-card__arrow">→</span>
                 </div>
               </div>
@@ -490,7 +507,7 @@
                 <span class="trade-card__sub">पेंटर</span>
                 <p>Interior wall painting, putty, texture &amp; exterior finish</p>
                 <div class="trade-card__footer">
-                  <span class="trade-card__rate">From ₹750/day</span>
+                  <span class="trade-card__count" id="cat-count-Painter"></span>
                   <span class="trade-card__arrow">→</span>
                 </div>
               </div>
@@ -501,7 +518,7 @@
                 <span class="trade-card__sub">बढ़ई</span>
                 <p>Furniture creation, door repair, wardrobes &amp; woodwork</p>
                 <div class="trade-card__footer">
-                  <span class="trade-card__rate">From ₹950/day</span>
+                  <span class="trade-card__count" id="cat-count-Carpenter"></span>
                   <span class="trade-card__arrow">→</span>
                 </div>
               </div>
@@ -512,7 +529,7 @@
                 <span class="trade-card__sub">वेल्डर</span>
                 <p>Grill welding, metal gates, structural steel &amp; fabrication</p>
                 <div class="trade-card__footer">
-                  <span class="trade-card__rate">From ₹900/day</span>
+                  <span class="trade-card__count" id="cat-count-Welder"></span>
                   <span class="trade-card__arrow">→</span>
                 </div>
               </div>
@@ -523,7 +540,7 @@
                 <span class="trade-card__sub">एसी सर्विस</span>
                 <p>Cooling repair, gas refilling, installation &amp; servicing</p>
                 <div class="trade-card__footer">
-                  <span class="trade-card__rate">From ₹600/day</span>
+                  <span class="trade-card__count" id="cat-count-AC Repair"></span>
                   <span class="trade-card__arrow">→</span>
                 </div>
               </div>
@@ -532,21 +549,21 @@
                 <div class="trade-card__icon trade-card__icon--construction">🏗️</div>
                 <h3>Construction Labour</h3>
                 <span class="trade-card__sub">मजदूर / लेबर</span>
-                <p>Site loading, excavation, debris cleaning &amp; site assistance</p>
+                <p>Site loading, excavation, debris cleaning &amp; assistance</p>
                 <div class="trade-card__footer">
-                  <span class="trade-card__rate">From ₹550/day</span>
+                  <span class="trade-card__count" id="cat-count-Construction Worker"></span>
                   <span class="trade-card__arrow">→</span>
                 </div>
               </div>
             </div>
           </section>
 
-          <!-- Featured Worker Cards Showcase Section -->
+          <!-- Main Skilled Worker Marketplace Showcase -->
           <section class="section-block section-block--dark" id="featured-workers-section">
             <div class="section-block__label">
-              <span class="section-block__badge">Live Workers • उपलब्ध कामगार</span>
-              <h2 class="section-block__title">Top Rated Skilled Workers Ready Today</h2>
-              <p class="section-block__subtitle">Call or WhatsApp verified workers directly without any agent fees</p>
+              <span class="section-block__badge">Workforce Marketplace</span>
+              <h2 class="section-block__title">Find Skilled Workers Near You</h2>
+              <p class="section-block__subtitle">Compare workers and connect directly.</p>
             </div>
 
             <!-- Home Worker Showcase Grid -->
@@ -556,123 +573,127 @@
 
             <div class="section-block__cta-wrap">
               <button class="button-v2 button-v2--primary" data-action="show-browse-workers">
-                <span>View All Verified Workers (सभी कामगार देखें) →</span>
+                <span>Browse All Workers Directory →</span>
               </button>
             </div>
           </section>
 
-          <!-- Why Choose Us -->
+          <!-- How It Works Section -->
+          <section class="section-block section-block--panel" id="how-it-works">
+            <div class="section-block__label">
+              <span class="section-block__badge section-block__badge--gold">3-Step Hiring</span>
+              <h2 class="section-block__title">How Shramik Setu Works</h2>
+              <p class="section-block__subtitle">Direct &amp; transparent connecting process</p>
+            </div>
+
+            <div class="steps-v2">
+              <div class="step-v2">
+                <div class="step-v2__number">01</div>
+                <div class="step-v2__content">
+                  <h4>Choose Your Work</h4>
+                  <p>Select the category you need.</p>
+                </div>
+              </div>
+              <div class="step-v2">
+                <div class="step-v2__number">02</div>
+                <div class="step-v2__content">
+                  <h4>Find a Worker</h4>
+                  <p>Compare workers near you.</p>
+                </div>
+              </div>
+              <div class="step-v2">
+                <div class="step-v2__number">03</div>
+                <div class="step-v2__content">
+                  <h4>Contact &amp; Hire</h4>
+                  <p>Call or WhatsApp the worker directly.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Why Shramik Setu (Trust Section) -->
           <section class="section-block" id="why-choose-us">
             <div class="section-block__label">
-              <span class="section-block__badge">Why Choose Shramik Setu</span>
-              <h2 class="section-block__title">Empowering Workers &amp; Simplifying Hiring</h2>
-              <p class="section-block__subtitle">A direct bridge between hard-working skilled workers and homeowners/contractors</p>
+              <span class="section-block__badge">Why Shramik Setu</span>
+              <h2 class="section-block__title">Direct Workforce Connection</h2>
+              <p class="section-block__subtitle">Built on trust, transparency, and direct communication</p>
             </div>
             <div class="features-v2">
               <div class="feature-v2">
                 <div class="feature-v2__icon-wrap feature-v2__icon-wrap--amber">
-                  👷
+                  🛡️
                 </div>
-                <h3>100% Wage Dignity (दहाड़ी का सही दाम)</h3>
-                <p>Workers set their own daily charges. Zero cuts, zero commissions. All earnings go directly to the worker's hands.</p>
-                <span class="feature-v2__tag feature-v2__tag--amber">Direct Earnings</span>
+                <h3>Verified Workers</h3>
+                <p>Profile credentials and Aadhaar verification status checked for confidence.</p>
+                <span class="feature-v2__tag feature-v2__tag--amber">Verified Badges</span>
               </div>
               <div class="feature-v2">
                 <div class="feature-v2__icon-wrap feature-v2__icon-wrap--blue">
                   📞
                 </div>
-                <h3>Direct Call &amp; WhatsApp</h3>
-                <p>Get phone numbers immediately. Call workers directly to discuss site work, timing, and wages without waiting.</p>
-                <span class="feature-v2__tag feature-v2__tag--blue">Instant Connection</span>
+                <h3>Direct Contact</h3>
+                <p>Call or WhatsApp workers directly to discuss work scope and daily rates.</p>
+                <span class="feature-v2__tag feature-v2__tag--blue">Direct Call &amp; WhatsApp</span>
               </div>
               <div class="feature-v2">
                 <div class="feature-v2__icon-wrap feature-v2__icon-wrap--green">
-                  🛡️
+                  💰
                 </div>
-                <h3>Aadhaar &amp; Skill Verified</h3>
-                <p>Verified profile credentials ensure peace of mind for house owners, builders, and commercial project managers.</p>
-                <span class="feature-v2__tag feature-v2__tag--green">100% Verified Profiles</span>
+                <h3>Transparent Wages</h3>
+                <p>Clear daily wage rates set by workers with zero hidden agency costs.</p>
+                <span class="feature-v2__tag feature-v2__tag--green">Transparent Daily Rates</span>
+              </div>
+              <div class="feature-v2">
+                <div class="feature-v2__icon-wrap feature-v2__icon-wrap--purple">
+                  🤝
+                </div>
+                <h3>No Middleman</h3>
+                <p>100% of the wage goes directly to the worker. Zero commission fee.</p>
+                <span class="feature-v2__tag feature-v2__tag--purple">0% Middleman Fee</span>
+              </div>
+              <div class="feature-v2">
+                <div class="feature-v2__icon-wrap feature-v2__icon-wrap--amber">
+                  📍
+                </div>
+                <h3>Local Workers</h3>
+                <p>Find experienced skilled tradespeople right in your city or neighborhood.</p>
+                <span class="feature-v2__tag feature-v2__tag--amber">Nearby Skilled Trades</span>
               </div>
             </div>
           </section>
 
-          <!-- How It Works -->
-          <section class="section-block section-block--panel" id="how-it-works">
-            <div class="section-block__label">
-              <span class="section-block__badge section-block__badge--gold">Simple 3-Step Process</span>
-              <h2 class="section-block__title">How Shramik Setu Works</h2>
-              <p class="section-block__subtitle">Built simple and intuitive for both workers and customers</p>
-            </div>
-
-            <div class="steps-v2">
-              <div class="step-v2">
-                <div class="step-v2__number">1</div>
-                <div class="step-v2__content">
-                  <h4>Register Profile (रजिस्ट्रेशन)</h4>
-                  <p>Workers list their trade, location &amp; daily rate in 1 minute. Customers log in to search.</p>
-                </div>
-              </div>
-              <div class="step-v2">
-                <div class="step-v2__number">2</div>
-                <div class="step-v2__content">
-                  <h4>Search &amp; Connect (सर्च करें)</h4>
-                  <p>Filter nearby electricians, masons or painters by rating, city, and daily rate.</p>
-                </div>
-              </div>
-              <div class="step-v2">
-                <div class="step-v2__number">3</div>
-                <div class="step-v2__content">
-                  <h4>Work &amp; Direct Pay (काम और सीधी अदायगी)</h4>
-                  <p>Worker completes the task and receives direct daily payment from the customer!</p>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <!-- Stats Section -->
+          <!-- Real Stats Summary Bar (Displays Real Supabase Worker Count Only) -->
           <section class="stats-v2">
             <div class="stats-v2__grid">
               <div class="stats-v2__item">
                 <div class="stats-v2__icon stats-v2__icon--amber">👷</div>
                 <strong id="live-stat-workers">0</strong>
-                <span>Verified Workers</span>
-              </div>
-              <div class="stats-v2__divider"></div>
-              <div class="stats-v2__item">
-                <div class="stats-v2__icon stats-v2__icon--green">💰</div>
-                <strong>₹500-2500</strong>
-                <span>Daily Wage Rates</span>
+                <span>Real Workers Registered</span>
               </div>
               <div class="stats-v2__divider"></div>
               <div class="stats-v2__item">
                 <div class="stats-v2__icon stats-v2__icon--blue">⚡</div>
-                <strong>100%</strong>
-                <span>Direct Contact</span>
+                <strong>Direct</strong>
+                <span>Call &amp; WhatsApp Connection</span>
               </div>
               <div class="stats-v2__divider"></div>
               <div class="stats-v2__item">
-                <div class="stats-v2__icon stats-v2__icon--purple">🤝</div>
+                <div class="stats-v2__icon stats-v2__icon--green">💰</div>
                 <strong>0%</strong>
-                <span>Middleman Fee</span>
+                <span>Middleman Commission</span>
               </div>
-            </div>
-            <div class="stats-v2__footer">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1l2 4.5 5 .7-3.6 3.5.85 5L8 12.5 3.75 14.7l.85-5L1 6.2l5-.7L8 1z" fill="#f59e0b"/></svg>
-              Empowering skilled Indian workers across Pune, Mumbai, Delhi, Jaipur, Nashik &amp; more
             </div>
           </section>
 
-
-
-          <!-- Worker Registration Banner -->
+          <!-- Final CTA Section -->
           <section class="worker-cta-banner">
             <div class="worker-cta-banner__inner">
               <div class="worker-cta-banner__text">
-                <h2>क्या आप एक कुशल कामगार हैं? (Are you a skilled worker?)</h2>
-                <p>आज ही श्रमिक सेतु पर अपना मुफ्त कार्ड बनाएं और सीधा ग्राहक से काम पाएं। कोई दलाल नहीं, पूरा फायदा आपका!</p>
+                <h2>Need a Skilled Worker Today?</h2>
+                <p>Find workers near you and connect directly.</p>
               </div>
-              <button class="button-v2 button-v2--primary" data-action="show-labour-register">
-                <span>👷 Register as Worker Free →</span>
+              <button class="button-v2 button-v2--primary" data-action="show-browse-workers">
+                <span>Find Workers →</span>
               </button>
             </div>
           </section>
@@ -692,17 +713,17 @@
                 </div>
                 <div class="labour-welcome-banner__info">
                   <h2 id="labour-dashboard-title">Welcome, Worker</h2>
-                  <p id="labour-profile-meta">Electrician • Pune, Wakad</p>
+                  <p id="labour-profile-meta">Electrician • Location</p>
                   <span class="status-badge status-badge--active"><span class="status-dot"></span> Available for Work Today</span>
                 </div>
               </div>
               <button class="button button--ghost" data-action="logout-labour">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:6px;"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                 Logout
               </button>
             </div>
 
-            <!-- Labour Quick Stats Cards -->
+            <!-- Quick Stats -->
             <div class="labour-quick-stats">
               <div class="labour-quick-stats__card">
                 <div class="labour-quick-stats__icon">💰</div>
@@ -721,8 +742,8 @@
               <div class="labour-quick-stats__card labour-quick-stats__card--highlight">
                 <div class="labour-quick-stats__icon">⭐</div>
                 <div>
-                  <span class="labour-quick-stats__value">4.9 / 5.0</span>
-                  <span class="labour-quick-stats__label">Customer Rating</span>
+                  <span class="labour-quick-stats__value">Verified</span>
+                  <span class="labour-quick-stats__label">Direct Hire Profile</span>
                 </div>
               </div>
             </div>
@@ -759,13 +780,14 @@
                   <span class="labour-summary-strip__label">Email</span>
                   <strong id="summary-email">-</strong>
                 </div>
+              </div>
             </div>
 
             <!-- Incoming Job Requests Section -->
             <div class="labour-edit-section" style="margin-bottom: 24px;">
               <div class="labour-edit-section__header">
                 <div>
-                  <h4>⚡ Incoming Job & Hiring Requests (नये काम के अनुरोध)</h4>
+                  <h4>⚡ Incoming Job Requests (नये काम के अनुरोध)</h4>
                   <p>Accept or reject direct hiring requests from customers in real-time</p>
                 </div>
               </div>
@@ -854,34 +876,85 @@
 
           <!-- Customer Dashboard / Browse Workers View -->
           <section class="dashboard dashboard--wide hidden" id="customer-dashboard-view">
-            <!-- Search & Filter Hero -->
+            
+            <!-- Marketplace Header & Multi-Filter Bar -->
             <div class="cust-search-hero">
               <div class="cust-search-hero__inner">
                 <div class="cust-search-hero__text">
-                  <h2 class="cust-search-hero__title">Find Verified Workers Nearby</h2>
-                  <p class="cust-search-hero__subtitle">Search skilled workers by trade name, city location, or daily wage rate</p>
+                  <h2 class="cust-search-hero__title">Find Skilled Workers Near You</h2>
+                  <p class="cust-search-hero__subtitle">Compare workers and connect directly.</p>
                 </div>
-                <div class="cust-search-bar">
-                  <div class="cust-search-bar__input-wrap">
-                    <svg class="cust-search-bar__icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-                    <input type="text" id="labour-search" placeholder="Search by name, trade skill (e.g. Electrician), or city (e.g. Pune)..." />
+
+                <!-- Comprehensive Working Filter Bar -->
+                <div class="marketplace-filter-bar">
+                  <div class="marketplace-filter-bar__search">
+                    <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                    <input type="text" id="labour-search" placeholder="Search worker name, skill (e.g. Electrician), or area..." />
                   </div>
-                  <div class="cust-search-bar__filter">
-                    <select id="skill-filter">
-                      <option value="all">All Skills / Trades</option>
-                    </select>
+
+                  <div class="marketplace-filter-bar__group">
+                    <!-- Location Filter -->
+                    <div class="filter-control">
+                      <label for="location-filter">📍 Location</label>
+                      <select id="location-filter">
+                        <option value="all">All Locations</option>
+                      </select>
+                    </div>
+
+                    <!-- Category Filter -->
+                    <div class="filter-control">
+                      <label for="skill-filter">🗂️ Category</label>
+                      <select id="skill-filter">
+                        <option value="all">All Categories</option>
+                      </select>
+                    </div>
+
+                    <!-- Daily Wage Filter -->
+                    <div class="filter-control">
+                      <label for="wage-filter">💰 Daily Wage</label>
+                      <select id="wage-filter">
+                        <option value="all">Any Daily Wage</option>
+                        <option value="under700">Under ₹700/day</option>
+                        <option value="700-1000">₹700 - ₹1000/day</option>
+                        <option value="above1000">Above ₹1000/day</option>
+                      </select>
+                    </div>
+
+                    <!-- Verified Status Filter -->
+                    <div class="filter-control">
+                      <label for="verified-filter">🛡️ Verification</label>
+                      <select id="verified-filter">
+                        <option value="all">All Statuses</option>
+                        <option value="approved">Aadhaar Verified Only</option>
+                      </select>
+                    </div>
+
+                    <!-- Sorting Filter -->
+                    <div class="filter-control">
+                      <label for="sort-filter">⇅ Sort By</label>
+                      <select id="sort-filter">
+                        <option value="default">Default Order</option>
+                        <option value="wage-low">Wage: Low to High</option>
+                        <option value="wage-high">Wage: High to Low</option>
+                        <option value="rating">Highest Rating</option>
+                      </select>
+                    </div>
+
+                    <button class="btn-clear-filters" id="clear-filters-btn" onclick="resetAllFilters()">
+                      <span>Clear Filters ✕</span>
+                    </button>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Stats Bar -->
+            <!-- Active Directory Stats Strip (Real Supabase Data Only) -->
             <div class="cust-stats-strip">
               <div class="cust-stats-strip__item">
                 <span class="cust-stats-strip__icon">👷</span>
                 <div>
                   <strong id="worker-count">0</strong>
-                  <span>Active Workers</span>
+                  <span>Active Real Workers</span>
                 </div>
               </div>
               <div class="cust-stats-strip__divider"></div>
@@ -894,14 +967,6 @@
               </div>
               <div class="cust-stats-strip__divider"></div>
               <div class="cust-stats-strip__item">
-                <span class="cust-stats-strip__icon">✅</span>
-                <div>
-                  <strong>100%</strong>
-                  <span>Verified Credentials</span>
-                </div>
-              </div>
-              <div class="cust-stats-strip__divider"></div>
-              <div class="cust-stats-strip__item">
                 <span class="cust-stats-strip__icon">📞</span>
                 <div>
                   <strong>Direct</strong>
@@ -910,30 +975,12 @@
               </div>
             </div>
 
-            <!-- Profile Info Bar -->
-            <div class="cust-profile-bar">
-              <div class="cust-profile-bar__left">
-                <div class="cust-profile-bar__avatar">
-                  <span>🏠</span>
-                </div>
-                <div class="cust-profile-bar__info">
-                  <h3>Hire Skilled Workers</h3>
-                  <p>Click any worker card to call or send a WhatsApp message directly</p>
-                </div>
-                <span class="status-badge status-badge--active"><span class="status-dot"></span> Live Workforce Directory</span>
-              </div>
-              <button class="button button--ghost" data-action="logout-customer">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:6px;"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                Logout
-              </button>
-            </div>
-
-            <!-- My Bookings Section -->
+            <!-- Customer My Bookings Section -->
             <div class="customer-bookings-section" id="customer-bookings-section">
               <div class="labour-edit-section" style="margin-bottom: 24px;">
                 <div class="labour-edit-section__header">
                   <div>
-                    <h4>📋 My Bookings &amp; Worker Details (मेरी बुकिंग और मज़दूर जानकारी)</h4>
+                    <h4>📋 My Bookings &amp; Worker Contact Details</h4>
                     <p>View your booked workers' complete contact details — call or WhatsApp them directly</p>
                   </div>
                 </div>
@@ -979,220 +1026,214 @@
               </div>
             </div>
 
-          <div id="admin-overview-tab">
-            <!-- Admin Stats Row -->
-            <div class="admin-grid">
-              <div class="admin-stat-card admin-stat-card--workers">
-                <div class="admin-stat-card__top">
-                  <span class="admin-stat-card__icon">👷</span>
-                  <span class="admin-stat-card__trend admin-stat-card__trend--up">+100% Direct</span>
+            <div id="admin-overview-tab">
+              <!-- Admin Stats Row -->
+              <div class="admin-grid">
+                <div class="admin-stat-card admin-stat-card--workers">
+                  <div class="admin-stat-card__top">
+                    <span class="admin-stat-card__icon">👷</span>
+                    <span class="admin-stat-card__trend admin-stat-card__trend--up">+100% Direct</span>
+                  </div>
+                  <div class="admin-stat-card__val" id="admin-stat-workers">0</div>
+                  <div class="admin-stat-card__lbl">Total Registered Workers</div>
                 </div>
-                <div class="admin-stat-card__val" id="admin-stat-workers">0</div>
-                <div class="admin-stat-card__lbl">Total Registered Workers</div>
-              </div>
-              <div class="admin-stat-card admin-stat-card--customers">
-                <div class="admin-stat-card__top">
-                  <span class="admin-stat-card__icon">🏠</span>
-                  <span class="admin-stat-card__trend admin-stat-card__trend--blue">Verified</span>
+                <div class="admin-stat-card admin-stat-card--customers">
+                  <div class="admin-stat-card__top">
+                    <span class="admin-stat-card__icon">🏠</span>
+                    <span class="admin-stat-card__trend admin-stat-card__trend--blue">Verified</span>
+                  </div>
+                  <div class="admin-stat-card__val" id="admin-stat-customers">0</div>
+                  <div class="admin-stat-card__lbl">Total Registered Customers</div>
                 </div>
-                <div class="admin-stat-card__val" id="admin-stat-customers">0</div>
-                <div class="admin-stat-card__lbl">Total Registered Customers</div>
-              </div>
-              <div class="admin-stat-card admin-stat-card--pending">
-                <div class="admin-stat-card__top">
-                  <span class="admin-stat-card__icon">🛡️</span>
-                  <span class="admin-stat-card__trend admin-stat-card__trend--amber">Action Required</span>
+                <div class="admin-stat-card admin-stat-card--pending">
+                  <div class="admin-stat-card__top">
+                    <span class="admin-stat-card__icon">🛡️</span>
+                    <span class="admin-stat-card__trend admin-stat-card__trend--amber">Action Required</span>
+                  </div>
+                  <div class="admin-stat-card__val" id="admin-stat-pending">0</div>
+                  <div class="admin-stat-card__lbl">Pending Verification Requests</div>
                 </div>
-                <div class="admin-stat-card__val" id="admin-stat-pending">0</div>
-                <div class="admin-stat-card__lbl">Pending Verification Requests</div>
-              </div>
-              <div class="admin-stat-card admin-stat-card--jobs">
-                <div class="admin-stat-card__top">
-                  <span class="admin-stat-card__icon">💼</span>
-                  <span class="admin-stat-card__trend admin-stat-card__trend--green">Active Site Work</span>
+                <div class="admin-stat-card admin-stat-card--jobs">
+                  <div class="admin-stat-card__top">
+                    <span class="admin-stat-card__icon">💼</span>
+                    <span class="admin-stat-card__trend admin-stat-card__trend--green">Active Site Work</span>
+                  </div>
+                  <div class="admin-stat-card__val" id="admin-stat-jobs">0</div>
+                  <div class="admin-stat-card__lbl">Total Bookings &amp; Jobs</div>
                 </div>
-                <div class="admin-stat-card__val" id="admin-stat-jobs">0</div>
-                <div class="admin-stat-card__lbl">Total Bookings &amp; Jobs</div>
               </div>
-            </div>
 
-            <!-- Pending Verification Requests Table -->
-            <div class="labour-edit-section admin-table-card" style="margin-bottom: 24px;">
-              <div class="labour-edit-section__header admin-table-header">
-                <div class="admin-table-title">
-                  <span class="admin-table-icon">🛡️</span>
+              <!-- Pending Verification Requests Table -->
+              <div class="labour-edit-section admin-table-card" style="margin-bottom: 24px;">
+                <div class="labour-edit-section__header admin-table-header">
+                  <div class="admin-table-title">
+                    <span class="admin-table-icon">🛡️</span>
+                    <div>
+                      <h4>Worker Verification Management</h4>
+                      <p class="admin-table-subtitle">Review worker profile details and issue Aadhaar verified badges</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="admin-table-wrap">
+                  <table class="admin-table">
+                    <thead>
+                      <tr>
+                        <th>Worker Name</th>
+                        <th>Trade Skill</th>
+                        <th>City Location</th>
+                        <th>Aadhaar Number</th>
+                        <th>Daily Wage</th>
+                        <th>Verification Status</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="admin-verification-list">
+                      <tr>
+                        <td colspan="7" style="text-align: center; color: var(--muted); padding: 24px;">No pending verification requests. All workers verified!</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- All Users Table -->
+              <div class="labour-edit-section admin-table-card">
+                <div class="labour-edit-section__header admin-table-header">
+                  <div class="admin-table-title">
+                    <span class="admin-table-icon">👥</span>
+                    <div>
+                      <h4>Platform User Directory &amp; Live Status</h4>
+                      <p class="admin-table-subtitle">View all registered accounts, role permissions &amp; live GPS status</p>
+                    </div>
+                  </div>
+                  <button class="btn-refresh-locations" onclick="refreshAllLocations()">
+                    <span>🔄 Refresh Locations</span>
+                  </button>
+                </div>
+                <div class="admin-table-wrap">
+                  <table class="admin-table">
+                    <thead>
+                      <tr>
+                        <th>User Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Phone</th>
+                        <th>📍 Live Location</th>
+                        <th>Registered On</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="admin-users-list">
+                      <tr>
+                        <td colspan="7" style="text-align: center; color: var(--muted); padding: 24px;">Loading users list...</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div> <!-- End admin-overview-tab -->
+
+            <!-- ADMIN LIVE MAP TAB -->
+            <div id="admin-livemap-tab" class="hidden">
+              <div class="livemap-stats-bar">
+                <div class="livemap-stats-bar__item">
+                  <div class="livemap-stats-bar__icon livemap-stats-bar__icon--blue">📡</div>
                   <div>
-                    <h4>Worker Verification Management (Aadhaar &amp; Profile Approvals)</h4>
-                    <p class="admin-table-subtitle">Review new worker profiles and issue Aadhaar verified badges</p>
+                    <strong id="livemap-stat-total">0</strong>
+                    <span>Total Tracked</span>
+                  </div>
+                </div>
+                <div class="livemap-stats-bar__divider"></div>
+                <div class="livemap-stats-bar__item">
+                  <div class="livemap-stats-bar__icon livemap-stats-bar__icon--green">🟢</div>
+                  <div>
+                    <strong id="livemap-stat-online">0</strong>
+                    <span>Online Now</span>
+                  </div>
+                </div>
+                <div class="livemap-stats-bar__divider"></div>
+                <div class="livemap-stats-bar__item">
+                  <div class="livemap-stats-bar__icon livemap-stats-bar__icon--gray">🔴</div>
+                  <div>
+                    <strong id="livemap-stat-offline">0</strong>
+                    <span>Offline</span>
+                  </div>
+                </div>
+                <div class="livemap-stats-bar__divider"></div>
+                <div class="livemap-stats-bar__item">
+                  <div class="livemap-stats-bar__icon livemap-stats-bar__icon--customer">🏠</div>
+                  <div>
+                    <strong id="livemap-stat-customers">0</strong>
+                    <span>Customers</span>
+                  </div>
+                </div>
+                <div class="livemap-stats-bar__divider"></div>
+                <div class="livemap-stats-bar__item">
+                  <div class="livemap-stats-bar__icon livemap-stats-bar__icon--worker">👷</div>
+                  <div>
+                    <strong id="livemap-stat-workers">0</strong>
+                    <span>Workers</span>
                   </div>
                 </div>
               </div>
-              <div class="admin-table-wrap">
-                <table class="admin-table">
-                  <thead>
-                    <tr>
-                      <th>Worker Name</th>
-                      <th>Trade Skill</th>
-                      <th>City Location</th>
-                      <th>Aadhaar Number</th>
-                      <th>Daily Wage</th>
-                      <th>Verification Status</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody id="admin-verification-list">
-                    <tr>
-                      <td colspan="7" style="text-align: center; color: var(--muted); padding: 24px;">No pending verification requests. All workers verified!</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
 
-            <!-- All Users Table -->
-            <div class="labour-edit-section admin-table-card">
-              <div class="labour-edit-section__header admin-table-header">
-                <div class="admin-table-title">
-                  <span class="admin-table-icon">👥</span>
-                  <div>
-                    <h4>Platform User Directory &amp; Live Status</h4>
-                    <p class="admin-table-subtitle">View all registered accounts, role permissions &amp; live GPS pins</p>
-                  </div>
+              <!-- Live Map Controls -->
+              <div class="livemap-controls">
+                <div class="livemap-controls__search">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                  <input type="text" id="livemap-search" placeholder="Search name, phone, user ID..." />
                 </div>
-                <button class="btn-refresh-locations" onclick="refreshAllLocations()">
-                  <span>🔄 Refresh Locations</span>
-                </button>
+                <div class="livemap-controls__filters">
+                  <select id="livemap-role-filter">
+                    <option value="all">All Roles</option>
+                    <option value="customer">🏠 Customers</option>
+                    <option value="worker">👷 Workers / Labour</option>
+                    <option value="admin">⚡ Admin</option>
+                  </select>
+                  <select id="livemap-status-filter">
+                    <option value="all">All Status</option>
+                    <option value="online">🟢 Online</option>
+                    <option value="offline">🔴 Offline</option>
+                  </select>
+                  <button class="livemap-controls__refresh" onclick="LiveMap.refresh()">
+                    🔄 Refresh Map
+                  </button>
+                </div>
               </div>
-              <div class="admin-table-wrap">
-                <table class="admin-table">
-                  <thead>
-                    <tr>
-                      <th>User Name</th>
-                      <th>Email</th>
-                      <th>Role</th>
-                      <th>Phone</th>
-                      <th>📍 Live Location</th>
-                      <th>Registered On</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody id="admin-users-list">
-                    <tr>
-                      <td colspan="7" style="text-align: center; color: var(--muted); padding: 24px;">Loading users list...</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div> <!-- End admin-overview-tab -->
 
-          <!-- ═══════════════════════════════════════════════ -->
-          <!-- ADMIN LIVE MAP TAB -->
-          <!-- ═══════════════════════════════════════════════ -->
-          <div id="admin-livemap-tab" class="hidden">
-            <!-- Live Map Stats Bar -->
-            <div class="livemap-stats-bar">
-              <div class="livemap-stats-bar__item">
-                <div class="livemap-stats-bar__icon livemap-stats-bar__icon--blue">📡</div>
-                <div>
-                  <strong id="livemap-stat-total">0</strong>
-                  <span>Total Tracked</span>
+              <div class="livemap-container" id="livemap-container-frame">
+                <div id="admin-live-map" class="livemap-map"></div>
+                <div id="livemap-empty-state" class="livemap-empty-state hidden">
+                  <div class="livemap-empty-state__icon">📍</div>
+                  <div class="livemap-empty-state__title">No Active Live Locations</div>
+                  <div class="livemap-empty-state__subtitle">Users will appear here when they share their location</div>
                 </div>
               </div>
-              <div class="livemap-stats-bar__divider"></div>
-              <div class="livemap-stats-bar__item">
-                <div class="livemap-stats-bar__icon livemap-stats-bar__icon--green">🟢</div>
-                <div>
-                  <strong id="livemap-stat-online">0</strong>
-                  <span>Online Now</span>
+
+              <div class="livemap-legend">
+                <div class="livemap-legend__item">
+                  <span class="livemap-legend__dot livemap-legend__dot--blue"></span>
+                  <span>Customer (Online)</span>
                 </div>
-              </div>
-              <div class="livemap-stats-bar__divider"></div>
-              <div class="livemap-stats-bar__item">
-                <div class="livemap-stats-bar__icon livemap-stats-bar__icon--gray">🔴</div>
-                <div>
-                  <strong id="livemap-stat-offline">0</strong>
+                <div class="livemap-legend__item">
+                  <span class="livemap-legend__dot livemap-legend__dot--orange"></span>
+                  <span>Worker / Labour (Online)</span>
+                </div>
+                <div class="livemap-legend__item">
+                  <span class="livemap-legend__dot livemap-legend__dot--purple"></span>
+                  <span>Admin (Online)</span>
+                </div>
+                <div class="livemap-legend__item">
+                  <span class="livemap-legend__dot livemap-legend__dot--gray"></span>
                   <span>Offline</span>
                 </div>
               </div>
-              <div class="livemap-stats-bar__divider"></div>
-              <div class="livemap-stats-bar__item">
-                <div class="livemap-stats-bar__icon livemap-stats-bar__icon--customer">🏠</div>
-                <div>
-                  <strong id="livemap-stat-customers">0</strong>
-                  <span>Customers</span>
-                </div>
-              </div>
-              <div class="livemap-stats-bar__divider"></div>
-              <div class="livemap-stats-bar__item">
-                <div class="livemap-stats-bar__icon livemap-stats-bar__icon--worker">👷</div>
-                <div>
-                  <strong id="livemap-stat-workers">0</strong>
-                  <span>Workers</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Live Map Controls (Search & Filters) -->
-            <div class="livemap-controls">
-              <div class="livemap-controls__search">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-                <input type="text" id="livemap-search" placeholder="Search by name, phone, user ID, role, online/offline..." />
-              </div>
-              <div class="livemap-controls__filters">
-                <select id="livemap-role-filter">
-                  <option value="all">All Roles</option>
-                  <option value="customer">🏠 Customers</option>
-                  <option value="worker">👷 Workers / Labour</option>
-                  <option value="admin">⚡ Admin</option>
-                </select>
-                <select id="livemap-status-filter">
-                  <option value="all">All Status</option>
-                  <option value="online">🟢 Online</option>
-                  <option value="offline">🔴 Offline</option>
-                </select>
-                <button class="livemap-controls__refresh" onclick="LiveMap.refresh()">
-                  🔄 Refresh Map
-                </button>
-              </div>
-            </div>
-
-            <!-- Clean Enterprise Leaflet Map Container -->
-            <div class="livemap-container" id="livemap-container-frame">
-              <div id="admin-live-map" class="livemap-map"></div>
-              <!-- Empty State — shown when no markers are visible -->
-              <div id="livemap-empty-state" class="livemap-empty-state hidden">
-                <div class="livemap-empty-state__icon">📍</div>
-                <div class="livemap-empty-state__title">No Active Live Locations</div>
-                <div class="livemap-empty-state__subtitle">Users will appear here when they share their location</div>
-              </div>
-            </div>
-
-            <!-- Professional Operations Map Legend -->
-            <div class="livemap-legend">
-              <div class="livemap-legend__item">
-                <span class="livemap-legend__dot livemap-legend__dot--blue"></span>
-                <span>Customer (Online)</span>
-              </div>
-              <div class="livemap-legend__item">
-                <span class="livemap-legend__dot livemap-legend__dot--orange"></span>
-                <span>Worker / Labour (Online)</span>
-              </div>
-              <div class="livemap-legend__item">
-                <span class="livemap-legend__dot livemap-legend__dot--purple"></span>
-                <span>Admin (Online)</span>
-              </div>
-              <div class="livemap-legend__item">
-                <span class="livemap-legend__dot livemap-legend__dot--gray"></span>
-                <span>Offline (Inactive 2m+)</span>
-              </div>
-            </div>
-          </div> <!-- End admin-livemap-tab -->
+            </div> <!-- End admin-livemap-tab -->
           </section>
         </div>
       </main>
 
-      <!-- Streamlined Enterprise Premium Footer v2 -->
+      <!-- Footer -->
       <footer class="app-footer app-footer--v2">
         <div class="app-footer__glow-bar"></div>
 
@@ -1209,7 +1250,7 @@
             </div>
 
             <p class="app-footer__about-text">
-              India's direct skilled workforce platform. Connecting Electricians, Plumbers, Masons, Painters, Carpenters, and Welders directly with house owners and builders — 100% commission-free with real-time live location tracking.
+              Direct skilled worker platform connecting homeowners and contractors directly with Electricians, Plumbers, Masons, Painters, Carpenters, and Welders — 100% commission-free.
             </p>
 
             <div class="app-footer__pills">
@@ -1219,31 +1260,38 @@
             </div>
           </div>
 
-          <div class="app-footer__nav-box">
-            <h4 class="app-footer__nav-title">Quick Navigation</h4>
-            <nav class="app-footer__nav-links">
-              <a href="#" onclick="showView('home')">
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 8l6-6 6 6M4 7v6h3v-4h2v4h3V7" stroke="currentColor" stroke-width="1.5"/></svg>
-                Home
-              </a>
-              <a href="#" onclick="showView('browse-workers')">
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.5"/></svg>
-                Find Workers
-              </a>
-              <a href="#" onclick="showToast('Privacy Policy: All worker & customer data secured in Supabase', 'info')">
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M5 7V4.5a3 3 0 016 0V7" stroke="currentColor" stroke-width="1.5"/></svg>
-                Privacy Policy
-              </a>
-              <a href="#" onclick="showToast('Terms of Service: Direct hiring platform rules apply', 'info')">
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 2h8a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.5"/><line x1="6" y1="5" x2="10" y2="5" stroke="currentColor" stroke-width="1.5"/><line x1="6" y1="8" x2="10" y2="8" stroke="currentColor" stroke-width="1.5"/></svg>
-                Terms of Service
-              </a>
-            </nav>
+          <div class="app-footer__nav-group">
+            <div class="app-footer__nav-box">
+              <h4 class="app-footer__nav-title">For Customers</h4>
+              <nav class="app-footer__nav-links">
+                <a href="#" onclick="showView('customer-dashboard')">Find Workers</a>
+                <a href="#" onclick="scrollToCategories()">Categories</a>
+                <a href="#" onclick="scrollToHowItWorks()">How It Works</a>
+              </nav>
+            </div>
+
+            <div class="app-footer__nav-box">
+              <h4 class="app-footer__nav-title">For Workers</h4>
+              <nav class="app-footer__nav-links">
+                <a href="#" onclick="showView('labour-register')">Register as Worker</a>
+                <a href="#" onclick="showView('labour-login')">Worker Login</a>
+                <a href="#" onclick="showView('labour-dashboard')">Worker Dashboard</a>
+              </nav>
+            </div>
+
+            <div class="app-footer__nav-box">
+              <h4 class="app-footer__nav-title">Support</h4>
+              <nav class="app-footer__nav-links">
+                <a href="#" onclick="showToast('Support: Contact us at support@shramiksetu.com', 'info')">Contact</a>
+                <a href="#" onclick="showToast('Privacy Policy: All profile data secured in Supabase', 'info')">Privacy Policy</a>
+                <a href="#" onclick="showToast('Terms: Direct hiring marketplace guidelines apply', 'info')">Terms</a>
+              </nav>
+            </div>
           </div>
         </div>
 
         <div class="app-footer__bottom-bar">
-          <p>© 2026 Shramik Setu (श्रमिक सेतु). All Rights Reserved. Empowering skilled workers across India.</p>
+          <p>© 2026 Shramik Setu (श्रमिक सेतु). All Rights Reserved. Empowering skilled workers.</p>
         </div>
       </footer>
     </div>

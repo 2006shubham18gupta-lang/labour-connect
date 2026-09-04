@@ -17,6 +17,8 @@ const state = {
   pendingRegPhoto: "",
   selectedWorkerForHire: null,
   locationCache: {}, // userId -> { lat, lng, timestamp }
+  fetchError: false,
+  isLoading: true,
 };
 
 const VIEW_IDS = [
@@ -58,6 +60,10 @@ const elements = {
   summaryEmail: document.getElementById("summary-email"),
   labourSearch: document.getElementById("labour-search"),
   skillFilter: document.getElementById("skill-filter"),
+  locationFilter: document.getElementById("location-filter"),
+  wageFilter: document.getElementById("wage-filter"),
+  verifiedFilter: document.getElementById("verified-filter"),
+  sortFilter: document.getElementById("sort-filter"),
   labourList: document.getElementById("labour-list"),
   homeLabourShowcase: document.getElementById("home-labour-showcase"),
   workerCount: document.getElementById("worker-count"),
@@ -83,8 +89,10 @@ const elements = {
 
 async function init() {
   setupEventListeners();
-  populateSkillFilter();
   showView('home');
+
+  // Render initial skeleton state
+  renderSkeletonLoaders();
 
   // Load all live data from Supabase
   await refreshAllData();
@@ -93,16 +101,30 @@ async function init() {
 async function refreshAllData() {
   if (!supabaseClient) {
     showToast("Supabase client failed to load", "error");
+    state.fetchError = true;
+    renderLabourList();
     return;
   }
 
-  await Promise.all([
-    fetchWorkers(),
-    fetchBookings(),
-    fetchAdminUsers(),
-    fetchUserLocations()
-  ]);
+  state.isLoading = true;
+  state.fetchError = false;
 
+  try {
+    await Promise.all([
+      fetchWorkers(),
+      fetchBookings(),
+      fetchAdminUsers(),
+      fetchUserLocations()
+    ]);
+  } catch (err) {
+    console.error("Data refresh error:", err);
+    state.fetchError = true;
+  } finally {
+    state.isLoading = false;
+  }
+
+  populateFilterDropdowns();
+  updateCategoryCounts();
   renderLabourList();
   renderHomeShowcase();
   updateStats();
@@ -164,13 +186,14 @@ async function fetchWorkers() {
       hours: w.hours || '9:00 AM - 6:00 PM',
       experience: w.experience || '',
       about: w.experience || '',
-      rating: String(w.rating || '5.0'),
+      rating: w.rating ? String(w.rating) : '',
       photo: w.photo || '',
       aadhaar_number: w.aadhaar_number || '',
       verification_status: w.verification_status || 'pending',
     }));
   } catch (err) {
     console.error("Error fetching workers:", err);
+    state.fetchError = true;
   }
 }
 
@@ -209,6 +232,84 @@ async function fetchAdminUsers() {
 }
 
 // ------------------------------------------------------------
+// DYNAMIC FILTERS & CATEGORY COUNTS
+// ------------------------------------------------------------
+
+function populateFilterDropdowns() {
+  // 1. Populate Skills Filter
+  const skillSelect = document.getElementById('skill-filter');
+  if (skillSelect) {
+    const currentVal = skillSelect.value;
+    const skills = [...new Set(state.workers.map(w => w.skill).filter(Boolean))].sort();
+    skillSelect.innerHTML = '<option value="all">All Categories</option>';
+    skills.forEach(skill => {
+      const opt = document.createElement('option');
+      opt.value = skill;
+      opt.textContent = skill;
+      skillSelect.appendChild(opt);
+    });
+    if (currentVal && Array.from(skillSelect.options).some(o => o.value === currentVal)) {
+      skillSelect.value = currentVal;
+    }
+  }
+
+  // 2. Populate Location Filter
+  const locationSelect = document.getElementById('location-filter');
+  if (locationSelect) {
+    const currentVal = locationSelect.value;
+    const locations = [...new Set(state.workers.map(w => w.location).filter(Boolean))].sort();
+    locationSelect.innerHTML = '<option value="all">All Locations</option>';
+    locations.forEach(loc => {
+      const opt = document.createElement('option');
+      opt.value = loc;
+      opt.textContent = `📍 ${loc}`;
+      locationSelect.appendChild(opt);
+    });
+    if (currentVal && Array.from(locationSelect.options).some(o => o.value === currentVal)) {
+      locationSelect.value = currentVal;
+    }
+  }
+}
+
+function updateCategoryCounts() {
+  // Calculate real worker count per trade skill from state.workers
+  const counts = {};
+  state.workers.forEach(w => {
+    if (w.skill) {
+      counts[w.skill] = (counts[w.skill] || 0) + 1;
+    }
+  });
+
+  document.querySelectorAll('.trade-card[data-skill]').forEach(card => {
+    const skill = card.dataset.skill;
+    const countEl = card.querySelector('.trade-card__count');
+    if (countEl) {
+      const num = counts[skill] || 0;
+      countEl.textContent = num > 0 ? `${num} Worker${num > 1 ? 's' : ''}` : 'View Category';
+    }
+  });
+}
+
+window.resetAllFilters = function() {
+  const searchInput = document.getElementById('labour-search');
+  const skillSelect = document.getElementById('skill-filter');
+  const locationSelect = document.getElementById('location-filter');
+  const wageSelect = document.getElementById('wage-filter');
+  const verifiedSelect = document.getElementById('verified-filter');
+  const sortSelect = document.getElementById('sort-filter');
+
+  if (searchInput) searchInput.value = '';
+  if (skillSelect) skillSelect.value = 'all';
+  if (locationSelect) locationSelect.value = 'all';
+  if (wageSelect) wageSelect.value = 'all';
+  if (verifiedSelect) verifiedSelect.value = 'all';
+  if (sortSelect) sortSelect.value = 'default';
+
+  renderLabourList();
+  showToast('Filters cleared', 'info');
+};
+
+// ------------------------------------------------------------
 // EVENT LISTENERS & NAVIGATION
 // ------------------------------------------------------------
 
@@ -242,7 +343,6 @@ function setupEventListeners() {
       mobileToggle.classList.toggle('topbar__mobile-toggle--active');
     });
 
-    // Auto-close mobile nav drawer when any nav link/button is clicked
     navEl.querySelectorAll('.nav-link, button').forEach(function(link) {
       link.addEventListener('click', function() {
         navEl.classList.remove('topbar__nav--open');
@@ -259,8 +359,15 @@ function setupEventListeners() {
   if (elements.hireWorkerForm) elements.hireWorkerForm.addEventListener('submit', handleHireSubmit);
   if (elements.adminSecretForm) elements.adminSecretForm.addEventListener('submit', handleAdminSecretSubmit);
 
-  if (elements.labourSearch) elements.labourSearch.addEventListener('input', renderLabourList);
-  if (elements.skillFilter) elements.skillFilter.addEventListener('change', renderLabourList);
+  // Search & Filter change handlers
+  const filterIds = ['labour-search', 'skill-filter', 'location-filter', 'wage-filter', 'verified-filter', 'sort-filter'];
+  filterIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      const eventName = el.tagName === 'INPUT' ? 'input' : 'change';
+      el.addEventListener(eventName, renderLabourList);
+    }
+  });
 
   // Secret Keyboard Trigger: Ctrl + Shift + A
   document.addEventListener('keydown', function(e) {
@@ -351,6 +458,20 @@ function handleAction(action, targetEl) {
     case 'show-browse-workers':
       showView('customer-dashboard');
       break;
+    case 'scroll-categories':
+      if (state.currentView !== 'home') showView('home');
+      setTimeout(() => {
+        const catSec = document.getElementById('categories-section');
+        if (catSec) catSec.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+      break;
+    case 'scroll-how-it-works':
+      if (state.currentView !== 'home') showView('home');
+      setTimeout(() => {
+        const hwSec = document.getElementById('how-it-works');
+        if (hwSec) hwSec.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+      break;
     case 'show-labour-login':
       showView('labour-login');
       break;
@@ -392,6 +513,14 @@ function handleAction(action, targetEl) {
   }
 }
 
+window.scrollToCategories = function() {
+  handleAction('scroll-categories');
+};
+
+window.scrollToHowItWorks = function() {
+  handleAction('scroll-how-it-works');
+};
+
 function updateNavigationUI() {
   const guestAuthEl = document.getElementById('topbar-auth-guest');
   const userAuthEl = document.getElementById('topbar-auth-user');
@@ -403,7 +532,6 @@ function updateNavigationUI() {
   if (!guestAuthEl || !userAuthEl) return;
 
   if (state.currentUser) {
-    // Hide guest login & registration buttons
     guestAuthEl.classList.add('hidden');
     userAuthEl.classList.remove('hidden');
 
@@ -434,7 +562,6 @@ function updateNavigationUI() {
       };
     }
   } else {
-    // Show guest login buttons when logged out
     guestAuthEl.classList.remove('hidden');
     userAuthEl.classList.add('hidden');
   }
@@ -484,7 +611,6 @@ function showView(viewName) {
     case 'admin-dashboard':
       if (elements.adminDashboardView) elements.adminDashboardView.classList.remove('hidden');
       renderAdminPanel();
-      // Reset to overview tab when opening admin dashboard
       if (typeof switchAdminTab === 'function') {
         switchAdminTab('overview');
       }
@@ -528,7 +654,6 @@ async function handleLabourRegister(e) {
   if (!supabaseClient) return;
 
   try {
-    // 1. Insert user with username fallback
     let userPayload = { email, username, full_name: name, phone, role: 'worker' };
     let { data: userData, error: userError } = await supabaseClient
       .from('users')
@@ -548,7 +673,6 @@ async function handleLabourRegister(e) {
       return;
     }
 
-    // 2. Insert worker profile
     const { error: profileError } = await supabaseClient
       .from('worker_profiles')
       .insert([{
@@ -635,14 +759,12 @@ async function handleCustomerRegister(e) {
 async function findUserInDb(inputVal, role) {
   if (!supabaseClient) return { users: [] };
 
-  // Attempt 1: With username column
   let { data: usersData, error } = await supabaseClient
     .from('users')
     .select('*')
     .or(`email.ilike.%${inputVal}%,username.ilike.%${inputVal}%,full_name.ilike.%${inputVal}%,phone.ilike.%${inputVal}%`)
     .eq('role', role);
 
-  // Fallback 1: If username column does not exist in table
   if (error && error.message && (error.message.includes('username') || error.code === 'PGRST204')) {
     const fallback = await supabaseClient
       .from('users')
@@ -653,7 +775,6 @@ async function findUserInDb(inputVal, role) {
     error = fallback.error;
   }
 
-  // Fallback 2: Select all users for role
   if (error || !usersData || usersData.length === 0) {
     const allUsers = await supabaseClient.from('users').select('*').eq('role', role);
     if (allUsers.data && allUsers.data.length > 0) {
@@ -717,14 +838,6 @@ async function handleLabourLogin(e) {
     state.currentRole = 'worker';
     e.target.reset();
 
-    console.log('═══════════════════════════════════════════');
-    console.log('[App] ✅ Worker login successful');
-    console.log('[App] Worker ID:', worker.id);
-    console.log('[App] Worker Name:', worker.name);
-    console.log('[App] Worker Email:', worker.email);
-    console.log('═══════════════════════════════════════════');
-
-    // Start live GPS tracking via LocationService
     if (typeof LocationService !== 'undefined' && supabaseClient) {
       LocationService.init({
         supabase: supabaseClient,
@@ -735,27 +848,17 @@ async function handleLabourLogin(e) {
           console.log('[App] ✅ GPS permission granted for worker');
         },
         onPermissionDenied: () => {
-          console.warn('[App] ❌ GPS permission denied for worker');
           showToast('📍 Location permission required for live tracking', 'info');
         },
-        onLocationUpdate: (pos) => {
-          console.log(`[App] 📍 Worker location updated: ${pos.latitude.toFixed(4)}, ${pos.longitude.toFixed(4)}`);
-        },
-        onError: (type, msg) => {
-          console.warn(`[App] ⚠️ Location error (${type}): ${msg}`);
-          if (type === 'table_missing') {
-            showToast('⚠️ Location table not set up. Please run LIVE_LOCATION_SETUP.sql', 'error');
-          }
-        },
+        onLocationUpdate: (pos) => {},
+        onError: (type, msg) => {},
       });
-    } else {
-      console.warn('[App] LocationService or supabaseClient not available');
     }
 
     showLabourDashboard(worker);
     showToast(`Welcome back, ${worker.name}!`, 'success');
   } else {
-    showToast('Worker account not found! Use your registered Username, Email, Name, or Phone.', 'error');
+    showToast('Worker account not found! Use registered Username, Email, Name, or Phone.', 'error');
     shakeElement(e.target.closest('.login-page__card'));
   }
 }
@@ -788,64 +891,36 @@ async function handleCustomerLogin(e) {
     state.currentRole = 'customer';
     e.target.reset();
 
-    console.log('═══════════════════════════════════════════');
-    console.log('[App] ✅ Customer login successful');
-    console.log('[App] Customer ID:', customerUser.id);
-    console.log('[App] Customer Name:', customerUser.full_name);
-    console.log('[App] Customer Email:', customerUser.email);
-    console.log('═══════════════════════════════════════════');
-
-    // Start live GPS tracking via LocationService
     if (typeof LocationService !== 'undefined' && supabaseClient) {
       LocationService.init({
         supabase: supabaseClient,
         userId: customerUser.id,
         userRole: 'customer',
         userName: customerUser.full_name,
-        onPermissionGranted: () => {
-          console.log('[App] ✅ GPS permission granted for customer');
-        },
-        onPermissionDenied: () => {
-          console.warn('[App] ❌ GPS permission denied for customer');
-          showToast('📍 Location permission required for live tracking', 'info');
-        },
-        onLocationUpdate: (pos) => {
-          console.log(`[App] 📍 Customer location updated: ${pos.latitude.toFixed(4)}, ${pos.longitude.toFixed(4)}`);
-        },
-        onError: (type, msg) => {
-          console.warn(`[App] ⚠️ Location error (${type}): ${msg}`);
-          if (type === 'table_missing') {
-            showToast('⚠️ Location table not set up. Please run LIVE_LOCATION_SETUP.sql', 'error');
-          }
-        },
+        onPermissionGranted: () => {},
+        onPermissionDenied: () => {},
+        onLocationUpdate: (pos) => {},
+        onError: (type, msg) => {},
       });
-    } else {
-      console.warn('[App] LocationService or supabaseClient not available');
     }
 
     showCustomerDashboard(customerUser);
     showToast(`Welcome back, ${customerUser.full_name}!`, 'success');
   } else {
-    showToast('Customer account not found! Use your registered Username, Email, Name, or Phone.', 'error');
+    showToast('Customer account not found! Use registered Username, Email, Name, or Phone.', 'error');
     shakeElement(e.target.closest('.login-page__card'));
   }
 }
 
 function logoutUser() {
-  console.log('[App] 🚪 Logging out user:', state.currentUser?.id || 'unknown');
-
-  // Stop live GPS tracking first (sets user offline)
   if (typeof LocationService !== 'undefined') {
     LocationService.stop();
   }
-  // Destroy live map if active
   if (typeof LiveMap !== 'undefined') {
     LiveMap.destroy();
   }
 
-  // Reset admin live map flag
   _adminLiveMapInitialized = false;
-
   state.currentUser = null;
   state.currentRole = null;
   showView('home');
@@ -908,12 +983,11 @@ function showCustomerDashboard(customer) {
   }
 
   renderLabourList();
-  populateSkillFilter();
+  populateFilterDropdowns();
   updateStats();
   renderCustomerBookings();
 }
 
-// Render the customer's bookings with full worker details
 function renderCustomerBookings() {
   const bookingsContainer = document.getElementById('customer-bookings-list');
   if (!bookingsContainer) return;
@@ -940,7 +1014,6 @@ function renderCustomerBookings() {
     const card = document.createElement('div');
     card.className = 'booking-card';
 
-    // Find the worker details
     const worker = state.workers.find(w => w.id === booking.worker_id);
     const workerName = worker ? worker.name : 'Worker';
     const workerPhone = worker ? worker.phone : '';
@@ -948,7 +1021,7 @@ function renderCustomerBookings() {
     const workerSkill = worker ? worker.skill : 'Skilled Worker';
     const workerLocation = worker ? worker.location : '';
     const workerPhoto = worker ? worker.photo : '';
-    const workerRating = worker ? (worker.rating || '5.0') : '5.0';
+    const workerRating = worker ? worker.rating : '';
     const workerInitials = workerName.replace(/\(.*?\)/g, '').trim().split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
 
     const statusBadge = booking.status === 'accepted'
@@ -957,7 +1030,6 @@ function renderCustomerBookings() {
       ? `<span class="badge-rejected">❌ Rejected</span>`
       : `<span class="badge-pending">⏳ Pending</span>`;
 
-    // Parse job details from notes
     const notesStr = booking.notes || '';
     const jobTitle = notesStr.split('|')[0]?.trim() || 'Job Booking';
     const jobLocation = extractField(notesStr, 'Location') || '';
@@ -977,7 +1049,7 @@ function renderCustomerBookings() {
         </div>
         <div class="booking-card__worker-info">
           <h4 class="booking-card__worker-name">${workerName}</h4>
-          <div class="booking-card__worker-skill">${skillIcon} ${workerSkill} • ⭐ ${workerRating}</div>
+          <div class="booking-card__worker-skill">${skillIcon} ${workerSkill} ${workerRating ? `• ⭐ ${workerRating}` : ''}</div>
         </div>
         ${statusBadge}
       </div>
@@ -1023,13 +1095,11 @@ async function handleProfileUpdate(e) {
   const about = formData.get('about') || '';
 
   try {
-    // 1. Update users table
     await supabaseClient
       .from('users')
       .update({ full_name: name, phone })
       .eq('id', workerId);
 
-    // 2. Update worker_profiles table
     await supabaseClient
       .from('worker_profiles')
       .update({
@@ -1047,7 +1117,7 @@ async function handleProfileUpdate(e) {
       state.currentUser = updatedWorker;
       showLabourDashboard(updatedWorker);
     }
-    showToast('✅ Profile Details Updated in Supabase Database!', 'success');
+    showToast('✅ Profile Details Updated!', 'success');
   } catch (err) {
     console.error("Profile update error:", err);
     showToast('Failed to update profile details', 'error');
@@ -1076,7 +1146,7 @@ async function handlePhotoUpload(e) {
         state.currentUser = updated;
         showLabourDashboard(updated);
       }
-      showToast('📷 Photo updated in Supabase Database!', 'success');
+      showToast('📷 Photo updated successfully!', 'success');
     };
     reader.readAsDataURL(file);
   }
@@ -1092,7 +1162,7 @@ async function handleDeleteProfile() {
 
       await refreshAllData();
       logoutUser();
-      showToast('Profile deleted permanently from Supabase', 'success');
+      showToast('Profile deleted permanently', 'success');
     }
   }
 }
@@ -1139,8 +1209,7 @@ async function handleHireSubmit(e) {
   const customerName = state.currentUser.full_name || state.currentUser.name || 'Customer';
   const customerPhone = state.currentUser.phone || '';
 
-  // Get customer address from customer_profiles
-  let customerAddress = location; // fallback to job location
+  let customerAddress = location;
   try {
     const { data: cpData } = await supabaseClient
       .from('customer_profiles')
@@ -1209,7 +1278,6 @@ function renderLabourJobRequests() {
       ? `<span class="badge-rejected">Rejected</span>`
       : `<span class="badge-pending">Pending Request</span>`;
 
-    // Parse customer details from notes
     const notesStr = req.notes || '';
     const customerName = extractField(notesStr, 'CustomerName') || 'Customer';
     const customerPhone = extractField(notesStr, 'CustomerPhone') || '';
@@ -1218,7 +1286,6 @@ function renderLabourJobRequests() {
     const jobTitle = notesStr.split('|')[0]?.trim() || 'Direct Job Booking';
     const jobNotes = extractField(notesStr, 'Notes') || '';
 
-    // Also try to find customer from users list for extra info
     const customerUser = state.users.find(u => u.id === req.customer_id);
     const displayName = customerName !== 'Customer' ? customerName : (customerUser?.full_name || 'Customer');
     const displayPhone = customerPhone || customerUser?.phone || '';
@@ -1261,7 +1328,6 @@ function renderLabourJobRequests() {
   });
 }
 
-// Helper to extract field from notes string like "... | FieldName: value | ..."
 function extractField(notesStr, fieldName) {
   const regex = new RegExp(fieldName + ':\\s*([^|]*)', 'i');
   const match = notesStr.match(regex);
@@ -1301,7 +1367,6 @@ function renderAdminPanel() {
   if (elements.adminStatPending) elements.adminStatPending.textContent = pendingRequests;
   if (elements.adminStatJobs) elements.adminStatJobs.textContent = totalJobs;
 
-  // Render Verification Table
   if (elements.adminVerificationList) {
     elements.adminVerificationList.innerHTML = '';
     const pendingWorkers = state.workers.filter(w => w.verification_status === 'pending');
@@ -1328,7 +1393,6 @@ function renderAdminPanel() {
     }
   }
 
-  // Render Users Table with Location
   if (elements.adminUsersList) {
     elements.adminUsersList.innerHTML = '';
     if (state.users.length === 0) {
@@ -1401,7 +1465,7 @@ window.deleteUserAdmin = async function(userId) {
         .eq('id', userId);
 
       await refreshAllData();
-      showToast('User account deleted from Supabase Database', 'success');
+      showToast('User account deleted', 'success');
     } catch (err) {
       console.error("Delete user error:", err);
     }
@@ -1409,47 +1473,67 @@ window.deleteUserAdmin = async function(userId) {
 };
 
 // ------------------------------------------------------------
-// WORKER DIRECTORY CARDS & SHOWCASE RENDERING
+// WORKER DIRECTORY CARDS & MARKETPLACE RENDERING
 // ------------------------------------------------------------
 
 function filterBySkill(skill) {
-  if (elements.skillFilter) elements.skillFilter.value = skill;
+  const skillSelect = document.getElementById('skill-filter');
+  if (skillSelect) skillSelect.value = skill;
   showView('customer-dashboard');
   renderLabourList();
   showToast(`Filtered workers by: ${skill}`, 'info');
 }
 
-function populateSkillFilter() {
-  const skills = [...new Set(state.workers.map(w => w.skill))].sort();
-  if (!elements.skillFilter) return;
+function renderSkeletonLoaders() {
+  if (elements.labourList) {
+    elements.labourList.innerHTML = Array(6).fill(0).map(() => `
+      <div class="labour-card labour-card--skeleton">
+        <div class="skeleton-avatar"></div>
+        <div class="skeleton-line skeleton-line--title"></div>
+        <div class="skeleton-line skeleton-line--subtitle"></div>
+        <div class="skeleton-line skeleton-line--body"></div>
+        <div class="skeleton-line skeleton-line--btn"></div>
+      </div>
+    `).join('');
+  }
 
-  elements.skillFilter.innerHTML = '<option value="all">All Trade Skills</option>';
-  skills.forEach(skill => {
-    const option = document.createElement('option');
-    option.value = skill;
-    option.textContent = skill;
-    elements.skillFilter.appendChild(option);
-  });
+  if (elements.homeLabourShowcase) {
+    elements.homeLabourShowcase.innerHTML = Array(3).fill(0).map(() => `
+      <div class="labour-card labour-card--skeleton">
+        <div class="skeleton-avatar"></div>
+        <div class="skeleton-line skeleton-line--title"></div>
+        <div class="skeleton-line skeleton-line--subtitle"></div>
+        <div class="skeleton-line skeleton-line--btn"></div>
+      </div>
+    `).join('');
+  }
 }
 
 function renderHomeShowcase() {
   if (!elements.homeLabourShowcase) return;
+
+  if (state.isLoading) {
+    renderSkeletonLoaders();
+    return;
+  }
+
   elements.homeLabourShowcase.innerHTML = '';
 
-  const approvedWorkers = state.workers.filter(w => w.verification_status === 'approved' || state.workers.length <= 6).slice(0, 6);
+  const showcaseWorkers = state.workers.slice(0, 6);
 
-  if (approvedWorkers.length === 0) {
+  if (showcaseWorkers.length === 0) {
     elements.homeLabourShowcase.innerHTML = `
       <div class="empty-state">
         <div class="empty-state__icon">👷</div>
-        <h3>No verified workers available yet</h3>
-        <p>Register as a skilled worker to be the first worker on Shramik Setu!</p>
+        <h3>No workers found</h3>
+        <p>Try changing your category or location.</p>
+        <button class="button-v2 button-v2--secondary" onclick="resetAllFilters()">Clear Filters</button>
       </div>
     `;
     return;
   }
 
-  approvedWorkers.forEach((labour, index) => {
+  showcaseWorkers.forEach((labour, index) => {
     const card = createLabourCard(labour, index);
     elements.homeLabourShowcase.appendChild(card);
   });
@@ -1457,31 +1541,81 @@ function renderHomeShowcase() {
 
 function renderLabourList() {
   if (!elements.labourList) return;
-  const searchTerm = (elements.labourSearch ? elements.labourSearch.value : '').toLowerCase();
-  const selectedSkill = elements.skillFilter ? elements.skillFilter.value : 'all';
 
-  const filteredLabours = state.workers.filter(labour => {
-    const matchesSearch = labour.name.toLowerCase().includes(searchTerm) ||
-                         labour.skill.toLowerCase().includes(searchTerm) ||
-                         labour.location.toLowerCase().includes(searchTerm);
-    const matchesSkill = selectedSkill === 'all' || labour.skill === selectedSkill;
-    return matchesSearch && matchesSkill;
-  });
+  if (state.isLoading) {
+    renderSkeletonLoaders();
+    return;
+  }
 
-  elements.labourList.innerHTML = '';
-
-  if (filteredLabours.length === 0) {
+  if (state.fetchError) {
     elements.labourList.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-state__icon">🔍</div>
-        <h3>No skilled workers found</h3>
-        <p>Try searching for a different trade skill or city location</p>
+      <div class="empty-state empty-state--error">
+        <div class="empty-state__icon">⚠️</div>
+        <h3>Unable to load workers right now.</h3>
+        <p>Please try again.</p>
+        <button class="button-v2 button-v2--primary" onclick="refreshAllData()">Retry</button>
       </div>
     `;
     return;
   }
 
-  filteredLabours.forEach((labour, index) => {
+  const searchVal = (document.getElementById('labour-search')?.value || '').trim().toLowerCase();
+  const locationVal = document.getElementById('location-filter')?.value || 'all';
+  const skillVal = document.getElementById('skill-filter')?.value || 'all';
+  const wageVal = document.getElementById('wage-filter')?.value || 'all';
+  const verifiedVal = document.getElementById('verified-filter')?.value || 'all';
+  const sortVal = document.getElementById('sort-filter')?.value || 'default';
+
+  let filtered = state.workers.filter(labour => {
+    // Search matching
+    const matchesSearch = !searchVal || 
+      labour.name.toLowerCase().includes(searchVal) ||
+      labour.skill.toLowerCase().includes(searchVal) ||
+      labour.location.toLowerCase().includes(searchVal) ||
+      (labour.about && labour.about.toLowerCase().includes(searchVal));
+
+    // Location matching
+    const matchesLocation = locationVal === 'all' || labour.location.toLowerCase().includes(locationVal.toLowerCase());
+
+    // Skill matching
+    const matchesSkill = skillVal === 'all' || labour.skill === skillVal;
+
+    // Wage matching
+    let matchesWage = true;
+    if (wageVal === 'under700') matchesWage = labour.cost < 700;
+    else if (wageVal === '700-1000') matchesWage = labour.cost >= 700 && labour.cost <= 1000;
+    else if (wageVal === 'above1000') matchesWage = labour.cost > 1000;
+
+    // Verification status matching
+    const matchesVerified = verifiedVal === 'all' || labour.verification_status === 'approved';
+
+    return matchesSearch && matchesLocation && matchesSkill && matchesWage && matchesVerified;
+  });
+
+  // Sorting
+  if (sortVal === 'wage-low') {
+    filtered.sort((a, b) => a.cost - b.cost);
+  } else if (sortVal === 'wage-high') {
+    filtered.sort((a, b) => b.cost - a.cost);
+  } else if (sortVal === 'rating') {
+    filtered.sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0));
+  }
+
+  elements.labourList.innerHTML = '';
+
+  if (filtered.length === 0) {
+    elements.labourList.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state__icon">🔍</div>
+        <h3>No workers found</h3>
+        <p>Try changing your category or location.</p>
+        <button class="button-v2 button-v2--primary" onclick="resetAllFilters()">Clear Filters</button>
+      </div>
+    `;
+    return;
+  }
+
+  filtered.forEach((labour, index) => {
     const card = createLabourCard(labour, index);
     elements.labourList.appendChild(card);
   });
@@ -1490,10 +1624,10 @@ function renderLabourList() {
 function createLabourCard(labour, index) {
   const card = document.createElement('div');
   card.className = 'labour-card';
-  card.style.animationDelay = `${index * 0.05}s`;
+  card.style.animationDelay = `${index * 0.04}s`;
 
   const photoSrc = labour.photo || '';
-  const initials = labour.name.replace(/\(.*?\)/g, '').trim().split(' ').map(n => n[0]).slice(0, 2).join('');
+  const initials = labour.name.replace(/\(.*?\)/g, '').trim().split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
 
   const skillIcons = {
     'Electrician': '⚡', 'Plumber': '🔧', 'Carpenter': '🪚', 'Mason': '🧱',
@@ -1502,15 +1636,19 @@ function createLabourCard(labour, index) {
     'Construction Worker': '🏗️',
   };
   const skillIcon = skillIcons[labour.skill] || '👷';
-  const rating = labour.rating || '5.0';
+  
+  // Conditional Badge & Information Rendering
+  const isApproved = labour.verification_status === 'approved';
+  const hasRating = labour.rating && Number(labour.rating) > 0;
+  const hasExperience = labour.about && labour.about.trim().length > 0;
 
   card.innerHTML = `
-    <div>
+    <div class="labour-card__body">
       <div class="labour-card__top">
         <div class="labour-card__avatar" onclick="showPhotoModal('${photoSrc.replace(/'/g, "\\'")}', '${labour.name.replace(/'/g, "\\'")}')">
           ${photoSrc ? `<img src="${photoSrc}" alt="${labour.name}" />` : `<span>${initials}</span>`}
         </div>
-        <div>
+        <div class="labour-card__header-info">
           <div class="labour-card__name">${labour.name}</div>
           <div class="labour-card__skill">${skillIcon} ${labour.skill}</div>
           <div class="labour-card__meta">
@@ -1518,32 +1656,34 @@ function createLabourCard(labour, index) {
               <svg width="14" height="14" viewBox="0 0 18 18" fill="none"><path d="M9 16s-6-5.3-6-9a6 6 0 0112 0c0 3.7-6 9-6 9z" stroke="currentColor" stroke-width="1.5"/><circle cx="9" cy="7" r="2" stroke="currentColor" stroke-width="1.5"/></svg>
               ${labour.location}
             </span>
-            <span class="labour-card__rating">⭐ ${rating}</span>
+            ${hasRating ? `<span class="labour-card__rating">⭐ ${labour.rating}</span>` : ''}
           </div>
         </div>
-        <div class="labour-card__badge-icon" title="${labour.verification_status === 'approved' ? 'Aadhaar Verified Worker' : 'Verification Pending'}">
-          ${labour.verification_status === 'approved' ? '✅' : '⏳'}
-        </div>
+        ${isApproved ? `
+          <div class="labour-card__verified-badge" title="Aadhaar Verified Worker">
+            <span>✅ Verified</span>
+          </div>
+        ` : ''}
       </div>
 
       <div class="labour-card__rate-badge">
         ₹${labour.cost} <small>/ day (दहाड़ी)</small>
       </div>
 
-      <p class="labour-card__about">${labour.about || 'Experienced worker ready for immediate work.'}</p>
+      ${hasExperience ? `<p class="labour-card__about">${labour.about}</p>` : ''}
     </div>
 
-    <div class="labour-card__actions" style="flex-direction: column; gap: 8px;">
-      <div style="display: flex; gap: 8px; width: 100%;">
-        <a href="tel:${labour.phone}" class="labour-card__btn labour-card__btn--call" style="flex: 1;">
-          Call Direct
+    <div class="labour-card__actions">
+      <div class="labour-card__contact-row">
+        <a href="tel:${labour.phone}" class="labour-card__btn labour-card__btn--call">
+          📞 Call Direct
         </a>
-        <a href="https://wa.me/${labour.phone.replace(/[^0-9]/g, '')}" class="labour-card__btn labour-card__btn--whatsapp" style="flex: 1;" target="_blank">
-          WhatsApp
+        <a href="https://wa.me/${labour.phone.replace(/[^0-9]/g, '')}" class="labour-card__btn labour-card__btn--whatsapp" target="_blank">
+          💬 WhatsApp
         </a>
       </div>
-      <button class="button-v2 button-v2--primary" style="width: 100%; padding: 10px;" data-action="open-hire-modal" data-worker-id="${labour.id}">
-        ⚡ Hire / Request Job
+      <button class="button-v2 button-v2--primary labour-card__hire-btn" data-action="open-hire-modal" data-worker-id="${labour.id}">
+        ⚡ Contact &amp; Hire Worker
       </button>
     </div>
   `;
@@ -1590,15 +1730,9 @@ function shakeElement(el) {
 document.addEventListener('DOMContentLoaded', init);
 
 // ------------------------------------------------------------
-// LIVE LOCATION TRACKING SYSTEM (Production — user_locations table)
-// Uses LocationService module for GPS tracking
-// Uses LiveMap module for Admin dashboard
+// LIVE LOCATION TRACKING SYSTEM
 // ------------------------------------------------------------
 
-/**
- * Fetch user locations from user_locations table
- * (used for admin users table "View Map" button)
- */
 async function fetchUserLocations() {
   if (!supabaseClient) return;
 
@@ -1609,15 +1743,9 @@ async function fetchUserLocations() {
 
     if (error) {
       console.warn('[App] ⚠️ user_locations fetch error:', error.message);
-      // Check if table exists at all
-      if (error.message && (error.message.includes('does not exist') || error.message.includes('relation'))) {
-        console.error('[App] ❌ CRITICAL: user_locations table does not exist!');
-        console.error('[App] Please run the SQL from LIVE_LOCATION_SETUP.sql in your Supabase Dashboard → SQL Editor');
-      }
       return;
     }
 
-    // Clear old cache and rebuild
     state.locationCache = {};
 
     if (data) {
@@ -1632,7 +1760,6 @@ async function fetchUserLocations() {
           };
         }
       });
-      console.log(`[App] 📍 Loaded ${Object.keys(state.locationCache).length} user locations from user_locations table`);
     }
   } catch (err) {
     console.error('[App] Fetch locations error:', err);
@@ -1675,7 +1802,6 @@ window.openLocationMap = function(userId, userName) {
 
   modal.classList.remove('hidden');
 
-  // Initialize or update map after modal is visible
   setTimeout(() => {
     const mapContainer = document.getElementById('location-map');
     if (locationMapInstance) {
@@ -1690,7 +1816,6 @@ window.openLocationMap = function(userId, userName) {
       maxZoom: 19
     }).addTo(locationMapInstance);
 
-    // Custom pulsing marker
     const pulseIcon = L.divIcon({
       className: 'location-pulse-marker',
       html: `
@@ -1708,7 +1833,6 @@ window.openLocationMap = function(userId, userName) {
       .bindPopup(`<strong>${userName}</strong><br>📍 Last seen: ${locData.timestamp ? getTimeAgo(locData.timestamp) : 'Recently'}`)
       .openPopup();
 
-    // Reverse geocode for address
     fetch(`https://nominatim.openstreetmap.org/reverse?lat=${locData.lat}&lon=${locData.lng}&format=json`)
       .then(r => r.json())
       .then(data => {
@@ -1736,10 +1860,6 @@ window.refreshAllLocations = async function() {
   showToast('📍 Locations refreshed!', 'success');
 };
 
-// ------------------------------------------------------------
-// ADMIN TAB SWITCHING (Overview ↔ Live Map)
-// ------------------------------------------------------------
-
 let _adminLiveMapInitialized = false;
 
 window.switchAdminTab = function(tab) {
@@ -1754,15 +1874,9 @@ window.switchAdminTab = function(tab) {
 
     if (overviewBtn) {
       overviewBtn.classList.add('admin-tab-btn--active');
-      overviewBtn.style.background = '';
-      overviewBtn.style.color = '';
-      overviewBtn.style.border = '';
     }
     if (livemapBtn) {
       livemapBtn.classList.remove('admin-tab-btn--active');
-      livemapBtn.style.background = '';
-      livemapBtn.style.color = '';
-      livemapBtn.style.border = '';
     }
   } else if (tab === 'livemap') {
     if (overviewTab) overviewTab.classList.add('hidden');
@@ -1770,18 +1884,11 @@ window.switchAdminTab = function(tab) {
 
     if (livemapBtn) {
       livemapBtn.classList.add('admin-tab-btn--active');
-      livemapBtn.style.background = '';
-      livemapBtn.style.color = '';
-      livemapBtn.style.border = '';
     }
     if (overviewBtn) {
       overviewBtn.classList.remove('admin-tab-btn--active');
-      overviewBtn.style.background = '';
-      overviewBtn.style.color = '';
-      overviewBtn.style.border = '';
     }
 
-    // Initialize LiveMap on first open
     if (!_adminLiveMapInitialized && typeof LiveMap !== 'undefined' && supabaseClient) {
       setTimeout(() => {
         LiveMap.init({
@@ -1791,33 +1898,11 @@ window.switchAdminTab = function(tab) {
         _adminLiveMapInitialized = true;
       }, 200);
     } else if (_adminLiveMapInitialized && typeof LiveMap !== 'undefined') {
-      // Re-invalidate map size when tab becomes visible
       LiveMap.invalidateSize();
     }
   }
 };
 
-window.toggleScannerLine = function() {
-  const beam = document.getElementById('livemap-scanner-beam');
-  const btn = document.getElementById('toggle-scanner-btn');
-  const text = document.getElementById('scanner-toggle-text');
-  
-  if (beam) {
-    if (beam.classList.contains('hidden')) {
-      beam.classList.remove('hidden');
-      if (btn) btn.classList.add('active');
-      if (text) text.textContent = 'Scanner Line: ON';
-      if (typeof showToast === 'function') showToast('⚡ Live Map Laser Scanner Line Enabled', 'info');
-    } else {
-      beam.classList.add('hidden');
-      if (btn) btn.classList.remove('active');
-      if (text) text.textContent = 'Scanner Line: OFF';
-      if (typeof showToast === 'function') showToast('⏸️ Laser Scanner Line Paused', 'info');
-    }
-  }
-};
-
-// Inject pulse animation CSS for location markers
 (function() {
   const style = document.createElement('style');
   style.textContent = `
